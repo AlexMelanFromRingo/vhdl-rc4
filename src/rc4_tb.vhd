@@ -3,15 +3,18 @@
 -- Compatible with Xilinx ISE 8.1i (VHDL-93)
 -- For Spartan-3 FPGA
 --
+-- IMPORTANT: Run simulation for at least 50 us (50000 ns)!
+-- KSA phase takes ~2560 clock cycles = ~25600 ns at 10ns period
+--
 -- Test Vector 1:
 --   Key: "Key" (ASCII) -> 4B 65 79
 --   Plaintext: "Plaintext" (ASCII) -> 50 6C 61 69 6E 74 65 78 74
---   Ciphertext: BB F3 16 E8 D9 40 AF 0A D3
+--   Expected Ciphertext: BB F3 16 E8 D9 40 AF 0A D3
 --
 -- Test Vector 2:
 --   Key: "Wiki" (ASCII) -> 57 69 6B 69
 --   Plaintext: "pedia" (ASCII) -> 70 65 64 69 61
---   Ciphertext: 10 21 BF 04 20
+--   Expected Ciphertext: 10 21 BF 04 20
 --------------------------------------------------------------------------------
 
 library IEEE;
@@ -68,6 +71,7 @@ architecture sim of rc4_tb is
     signal test_done    : std_logic := '0';
     signal test_pass    : std_logic := '1';
     signal current_test : integer := 0;
+    signal error_count  : integer := 0;
 
 begin
 
@@ -125,7 +129,14 @@ begin
     -- Main test process
     test_proc : process
         variable expected : byte_t;
+        variable pass_count : integer := 0;
+        variable fail_count : integer := 0;
     begin
+        report "============================================================";
+        report "RC4 Cipher Testbench Started";
+        report "NOTE: KSA takes ~2560 clock cycles (~25600 ns)";
+        report "============================================================";
+
         -- Initial reset
         rst <= '1';
         wait for CLK_PERIOD * 5;
@@ -135,23 +146,29 @@ begin
         ------------------------------------------------------------------------
         -- Test 1: Key = "Key", Plaintext = "Plaintext"
         ------------------------------------------------------------------------
-        report "========================================";
-        report "Test 1: Key='Key', Plaintext='Plaintext'";
-        report "========================================";
+        report "============================================================";
+        report "TEST 1: Key='Key' (4B 65 79)";
+        report "        Plaintext='Plaintext' (50 6C 61 69 6E 74 65 78 74)";
+        report "        Expected: BB F3 16 E8 D9 40 AF 0A D3";
+        report "============================================================";
 
         current_test <= 1;
+        wait for CLK_PERIOD;
         key_len <= conv_std_logic_vector(KEY1_LEN, 8);
 
         -- Start KSA
+        report "Starting KSA (Key Scheduling Algorithm)...";
         start <= '1';
         wait for CLK_PERIOD;
         start <= '0';
 
         -- Wait for KSA to complete
+        report "Waiting for KSA to complete (this takes ~2560 cycles)...";
         wait until ready = '1';
-        report "KSA complete, starting encryption...";
+        report ">>> KSA COMPLETE! Ready to encrypt. <<<";
 
         -- Encrypt each byte
+        report "Starting encryption...";
         for i in 0 to PLAIN1_LEN - 1 loop
             data_in <= PLAIN1(i);
             data_valid <= '1';
@@ -163,41 +180,60 @@ begin
 
             expected := CIPHER1(i);
             if data_out = expected then
-                report "Byte " & integer'image(i) & ": OK";
+                report "Byte " & integer'image(i) & ": Input=" & byte_to_hex(PLAIN1(i)) &
+                       " Output=" & byte_to_hex(data_out) &
+                       " Expected=" & byte_to_hex(expected) & " -> PASS";
+                pass_count := pass_count + 1;
             else
-                report "Byte " & integer'image(i) & ": FAIL" severity error;
+                report "Byte " & integer'image(i) & ": Input=" & byte_to_hex(PLAIN1(i)) &
+                       " Output=" & byte_to_hex(data_out) &
+                       " Expected=" & byte_to_hex(expected) & " -> FAIL" severity error;
+                fail_count := fail_count + 1;
                 test_pass <= '0';
             end if;
 
             wait for CLK_PERIOD;
         end loop;
 
+        report "Test 1 Complete: " & integer'image(pass_count) & " passed, " &
+               integer'image(fail_count) & " failed";
+
         -- Reset between tests
         rst <= '1';
-        wait for CLK_PERIOD * 3;
+        wait for CLK_PERIOD * 5;
         rst <= '0';
         wait for CLK_PERIOD * 2;
+
+        -- Reset counters for test 2
+        pass_count := 0;
+        fail_count := 0;
 
         ------------------------------------------------------------------------
         -- Test 2: Key = "Wiki", Plaintext = "pedia"
         ------------------------------------------------------------------------
-        report "========================================";
-        report "Test 2: Key='Wiki', Plaintext='pedia'";
-        report "========================================";
+        report "============================================================";
+        report "TEST 2: Key='Wiki' (57 69 6B 69)";
+        report "        Plaintext='pedia' (70 65 64 69 61)";
+        report "        Expected: 10 21 BF 04 20";
+        report "============================================================";
 
         current_test <= 2;
+        wait for CLK_PERIOD;
         key_len <= conv_std_logic_vector(KEY2_LEN, 8);
 
         -- Start KSA
+        report "Starting KSA...";
         start <= '1';
         wait for CLK_PERIOD;
         start <= '0';
 
         -- Wait for KSA to complete
+        report "Waiting for KSA to complete...";
         wait until ready = '1';
-        report "KSA complete, starting encryption...";
+        report ">>> KSA COMPLETE! Ready to encrypt. <<<";
 
         -- Encrypt each byte
+        report "Starting encryption...";
         for i in 0 to PLAIN2_LEN - 1 loop
             data_in <= PLAIN2(i);
             data_valid <= '1';
@@ -209,23 +245,34 @@ begin
 
             expected := CIPHER2(i);
             if data_out = expected then
-                report "Byte " & integer'image(i) & ": OK";
+                report "Byte " & integer'image(i) & ": Input=" & byte_to_hex(PLAIN2(i)) &
+                       " Output=" & byte_to_hex(data_out) &
+                       " Expected=" & byte_to_hex(expected) & " -> PASS";
+                pass_count := pass_count + 1;
             else
-                report "Byte " & integer'image(i) & ": FAIL" severity error;
+                report "Byte " & integer'image(i) & ": Input=" & byte_to_hex(PLAIN2(i)) &
+                       " Output=" & byte_to_hex(data_out) &
+                       " Expected=" & byte_to_hex(expected) & " -> FAIL" severity error;
+                fail_count := fail_count + 1;
                 test_pass <= '0';
             end if;
 
             wait for CLK_PERIOD;
         end loop;
 
+        report "Test 2 Complete: " & integer'image(pass_count) & " passed, " &
+               integer'image(fail_count) & " failed";
+
         -- Final report
-        report "========================================";
+        report "============================================================";
+        report "                    FINAL RESULTS                           ";
+        report "============================================================";
         if test_pass = '1' then
-            report "All tests PASSED!" severity note;
+            report ">>> ALL TESTS PASSED! RC4 implementation is correct. <<<" severity note;
         else
-            report "Some tests FAILED!" severity error;
+            report ">>> SOME TESTS FAILED! Check implementation. <<<" severity error;
         end if;
-        report "========================================";
+        report "============================================================";
 
         test_done <= '1';
         wait;

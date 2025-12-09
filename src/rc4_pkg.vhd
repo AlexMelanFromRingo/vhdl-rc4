@@ -52,8 +52,49 @@ package rc4_pkg is
         PRGA_OUTPUT     -- XOR with input byte and output
     );
 
+    -- Function to convert nibble to hex character (for simulation output)
+    function nibble_to_hex(nibble : std_logic_vector(3 downto 0)) return character;
+
+    -- Function to convert byte to hex string (for simulation output)
+    function byte_to_hex(byte_val : std_logic_vector(7 downto 0)) return string;
+
 end package rc4_pkg;
 
 package body rc4_pkg is
-    -- Package body (empty for now)
+
+    -- Convert 4-bit nibble to hex character
+    function nibble_to_hex(nibble : std_logic_vector(3 downto 0)) return character is
+        variable result : character;
+    begin
+        case nibble is
+            when "0000" => result := '0';
+            when "0001" => result := '1';
+            when "0010" => result := '2';
+            when "0011" => result := '3';
+            when "0100" => result := '4';
+            when "0101" => result := '5';
+            when "0110" => result := '6';
+            when "0111" => result := '7';
+            when "1000" => result := '8';
+            when "1001" => result := '9';
+            when "1010" => result := 'A';
+            when "1011" => result := 'B';
+            when "1100" => result := 'C';
+            when "1101" => result := 'D';
+            when "1110" => result := 'E';
+            when "1111" => result := 'F';
+            when others => result := 'X';
+        end case;
+        return result;
+    end function nibble_to_hex;
+
+    -- Convert byte to 2-character hex string
+    function byte_to_hex(byte_val : std_logic_vector(7 downto 0)) return string is
+        variable result : string(1 to 2);
+    begin
+        result(1) := nibble_to_hex(byte_val(7 downto 4));
+        result(2) := nibble_to_hex(byte_val(3 downto 0));
+        return result;
+    end function byte_to_hex;
+
 end package body rc4_pkg;
