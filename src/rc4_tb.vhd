@@ -33,7 +33,7 @@ architecture Behavioral of rc4_tb is
             data_ready  : out std_logic;
             busy        : out std_logic;
             ksa_done    : out std_logic;
-            error       : out std_logic
+            err_out     : out std_logic
         );
     end component;
 
@@ -50,7 +50,7 @@ architecture Behavioral of rc4_tb is
     signal data_ready : std_logic;
     signal busy : std_logic;
     signal ksa_done : std_logic;
-    signal error : std_logic;
+    signal err_flag : std_logic;
 
     -- Константи часу
     constant CLK_PERIOD : time := 10 ns;
@@ -116,7 +116,7 @@ begin
             data_ready => data_ready,
             busy => busy,
             ksa_done => ksa_done,
-            error => error
+            err_out => err_flag
         );
 
     -- Генерація тактового сигналу
@@ -641,11 +641,11 @@ begin
         start <= '0';
         wait for CLK_PERIOD * 2;
 
-        if error = '1' then
+        if err_flag = '1' then
             report "  PASS - Error signal raised for zero key length" severity note;
             local_passed := local_passed + 1;
         else
-            report "  FAIL - Error signal NOT raised for zero key length" severity error;
+            report "  FAIL - Error signal NOT raised for zero key length" severity warning;
             local_failed := local_failed + 1;
         end if;
 

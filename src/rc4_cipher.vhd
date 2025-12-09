@@ -35,7 +35,7 @@ entity rc4_cipher is
         -- Статус
         busy        : out std_logic;                    -- Модуль зайнятий
         ksa_done    : out std_logic;                    -- KSA завершено, готовий до шифрування
-        error       : out std_logic                     -- Помилка (невірна довжина ключа)
+        err_out     : out std_logic                     -- Помилка (невірна довжина ключа)
     );
 end rc4_cipher;
 
@@ -79,7 +79,7 @@ begin
             data_ready <= '0';
             busy <= '0';
             ksa_done <= '0';
-            error <= '0';
+            err_out <= '0';
             si <= (others => '0');
             sj <= (others => '0');
             t_val <= (others => '0');
@@ -92,13 +92,13 @@ begin
                 -- Стан очікування
                 when IDLE =>
                     busy <= '0';
-                    error <= '0';
+                    err_out <= '0';
 
                     if start = '1' then
                         -- Перевірка довжини ключа (1-255 байт)
                         if key_length = 0 then
                             -- Помилка: нульова довжина ключа
-                            error <= '1';
+                            err_out <= '1';
                         else
                             key_len <= key_length;
                             -- Скидання ksa_done при новому запуску
