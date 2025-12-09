@@ -1,6 +1,7 @@
 --------------------------------------------------------------------------------
 -- RC4 Testbench
--- Verifies RC4 implementation using test vectors from documentation
+-- Compatible with Xilinx ISE 8.1i (VHDL-93)
+-- For Spartan-3 FPGA
 --
 -- Test Vector 1:
 --   Key: "Key" (ASCII) -> 4B 65 79
@@ -15,10 +16,11 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 library work;
-use work.rc4_pkg.all;
+use work.rc4_pkg.ALL;
 
 entity rc4_tb is
 end entity rc4_tb;
@@ -31,9 +33,9 @@ architecture sim of rc4_tb is
     signal clk          : std_logic := '0';
     signal rst          : std_logic := '1';
     signal start        : std_logic := '0';
-    signal key_len      : unsigned(7 downto 0) := (others => '0');
+    signal key_len      : std_logic_vector(7 downto 0) := (others => '0');
     signal key_data     : byte_t := (others => '0');
-    signal key_addr     : unsigned(7 downto 0);
+    signal key_addr     : std_logic_vector(7 downto 0);
     signal data_in      : byte_t := (others => '0');
     signal data_valid   : std_logic := '0';
     signal data_out     : byte_t;
@@ -48,7 +50,7 @@ architecture sim of rc4_tb is
     constant KEY1_LEN : integer := 3;
 
     type plain1_t is array (0 to 8) of byte_t;
-    constant PLAIN1 : plain1_t := (x"50", x"6C", x"61", x"69", x"6E", x"74", x"65", x"78", x"74");  -- "Plaintext"
+    constant PLAIN1 : plain1_t := (x"50", x"6C", x"61", x"69", x"6E", x"74", x"65", x"78", x"74");
     constant CIPHER1 : plain1_t := (x"BB", x"F3", x"16", x"E8", x"D9", x"40", x"AF", x"0A", x"D3");
     constant PLAIN1_LEN : integer := 9;
 
@@ -98,18 +100,20 @@ begin
             ready       => ready
         );
 
-    -- Key memory process (provides key bytes based on address)
+    -- Key memory process
     key_mem_proc : process(key_addr, current_test)
+        variable addr_int : integer;
     begin
+        addr_int := conv_integer(key_addr);
         if current_test = 1 then
-            if to_integer(key_addr) < KEY1_LEN then
-                key_data <= KEY1(to_integer(key_addr));
+            if addr_int < KEY1_LEN then
+                key_data <= KEY1(addr_int);
             else
                 key_data <= x"00";
             end if;
         elsif current_test = 2 then
-            if to_integer(key_addr) < KEY2_LEN then
-                key_data <= KEY2(to_integer(key_addr));
+            if addr_int < KEY2_LEN then
+                key_data <= KEY2(addr_int);
             else
                 key_data <= x"00";
             end if;
@@ -120,8 +124,7 @@ begin
 
     -- Main test process
     test_proc : process
-        variable output_idx : integer;
-        variable expected   : byte_t;
+        variable expected : byte_t;
     begin
         -- Initial reset
         rst <= '1';
@@ -137,7 +140,7 @@ begin
         report "========================================";
 
         current_test <= 1;
-        key_len <= to_unsigned(KEY1_LEN, 8);
+        key_len <= conv_std_logic_vector(KEY1_LEN, 8);
 
         -- Start KSA
         start <= '1';
@@ -160,12 +163,9 @@ begin
 
             expected := CIPHER1(i);
             if data_out = expected then
-                report "Byte " & integer'image(i) & ": OK (0x" &
-                       to_hstring(unsigned(data_out)) & ")";
+                report "Byte " & integer'image(i) & ": OK";
             else
-                report "Byte " & integer'image(i) & ": FAIL - Expected 0x" &
-                       to_hstring(unsigned(expected)) & ", Got 0x" &
-                       to_hstring(unsigned(data_out)) severity error;
+                report "Byte " & integer'image(i) & ": FAIL" severity error;
                 test_pass <= '0';
             end if;
 
@@ -186,7 +186,7 @@ begin
         report "========================================";
 
         current_test <= 2;
-        key_len <= to_unsigned(KEY2_LEN, 8);
+        key_len <= conv_std_logic_vector(KEY2_LEN, 8);
 
         -- Start KSA
         start <= '1';
@@ -209,12 +209,9 @@ begin
 
             expected := CIPHER2(i);
             if data_out = expected then
-                report "Byte " & integer'image(i) & ": OK (0x" &
-                       to_hstring(unsigned(data_out)) & ")";
+                report "Byte " & integer'image(i) & ": OK";
             else
-                report "Byte " & integer'image(i) & ": FAIL - Expected 0x" &
-                       to_hstring(unsigned(expected)) & ", Got 0x" &
-                       to_hstring(unsigned(data_out)) severity error;
+                report "Byte " & integer'image(i) & ": FAIL" severity error;
                 test_pass <= '0';
             end if;
 

@@ -1,22 +1,24 @@
 --------------------------------------------------------------------------------
 -- RC4 Package - Types and Constants
--- Contains type definitions and constants for RC4 cipher implementation
+-- Compatible with Xilinx ISE 8.1i (VHDL-93)
+-- For Spartan-3 FPGA
 --------------------------------------------------------------------------------
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 package rc4_pkg is
     -- Constants
     constant SBOX_SIZE      : integer := 256;   -- S-box size (256 bytes)
-    constant SBOX_ADDR_WIDTH: integer := 8;     -- Address width for S-box (log2(256))
+    constant SBOX_ADDR_WIDTH: integer := 8;     -- Address width for S-box
     constant DATA_WIDTH     : integer := 8;     -- Data width (1 byte)
     constant MAX_KEY_LENGTH : integer := 256;   -- Maximum key length in bytes
 
     -- Types
     subtype byte_t is std_logic_vector(7 downto 0);
-    subtype sbox_addr_t is unsigned(7 downto 0);
+    subtype sbox_addr_t is std_logic_vector(7 downto 0);
 
     -- Key array type (variable length key support)
     type key_array_t is array (0 to MAX_KEY_LENGTH-1) of byte_t;
@@ -53,5 +55,5 @@ package rc4_pkg is
 end package rc4_pkg;
 
 package body rc4_pkg is
-    -- Package body (empty for now, can add functions later)
+    -- Package body (empty for now)
 end package body rc4_pkg;

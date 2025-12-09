@@ -1,6 +1,7 @@
 --------------------------------------------------------------------------------
 -- RC4 Cipher - Main Module
--- Implements RC4 stream cipher with KSA and PRGA phases
+-- Compatible with Xilinx ISE 8.1i (VHDL-93)
+-- For Spartan-3 FPGA
 --
 -- Algorithm:
 --   KSA (Key-Scheduling Algorithm):
@@ -23,10 +24,11 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 library work;
-use work.rc4_pkg.all;
+use work.rc4_pkg.ALL;
 
 entity rc4 is
     port (
@@ -35,56 +37,60 @@ entity rc4 is
 
         -- Control signals
         start       : in  std_logic;                    -- Start KSA
-        key_len     : in  unsigned(7 downto 0);         -- Key length (1-256)
+        key_len     : in  std_logic_vector(7 downto 0); -- Key length (1-256)
         key_data    : in  byte_t;                       -- Key byte input
-        key_addr    : out unsigned(7 downto 0);         -- Key address request
+        key_addr    : out std_logic_vector(7 downto 0); -- Key address request
 
         -- Data interface (for encryption/decryption)
-        data_in     : in  byte_t;                       -- Input byte (plaintext/ciphertext)
+        data_in     : in  byte_t;                       -- Input byte
         data_valid  : in  std_logic;                    -- Input data valid
-        data_out    : out byte_t;                       -- Output byte (ciphertext/plaintext)
+        data_out    : out byte_t;                       -- Output byte
         data_ready  : out std_logic;                    -- Output data ready
 
         -- Status
-        busy        : out std_logic;                    -- Module is busy (KSA in progress)
+        busy        : out std_logic;                    -- Module is busy
         ready       : out std_logic                     -- Ready to encrypt/decrypt
     );
 end entity rc4;
 
 architecture rtl of rc4 is
     -- FSM state
-    signal state        : rc4_state_t := IDLE;
-    signal next_state   : rc4_state_t;
+    signal state        : rc4_state_t;
 
     -- S-box RAM signals
-    signal sbox_addr_a  : sbox_addr_t := (others => '0');
-    signal sbox_din_a   : byte_t := (others => '0');
-    signal sbox_we_a    : std_logic := '0';
+    signal sbox_addr_a  : sbox_addr_t;
+    signal sbox_din_a   : byte_t;
+    signal sbox_we_a    : std_logic;
     signal sbox_dout_a  : byte_t;
 
-    signal sbox_addr_b  : sbox_addr_t := (others => '0');
-    signal sbox_din_b   : byte_t := (others => '0');
-    signal sbox_we_b    : std_logic := '0';
+    signal sbox_addr_b  : sbox_addr_t;
+    signal sbox_din_b   : byte_t;
+    signal sbox_we_b    : std_logic;
     signal sbox_dout_b  : byte_t;
 
-    -- Internal counters and registers
-    signal i_cnt        : unsigned(8 downto 0) := (others => '0');  -- 9-bit for 0-256 range
-    signal j_cnt        : unsigned(7 downto 0) := (others => '0');
+    -- Internal counters and registers (9-bit for 0-256 range)
+    signal i_cnt        : std_logic_vector(8 downto 0);
+    signal j_cnt        : std_logic_vector(7 downto 0);
 
     -- Temporary registers for swap operations
-    signal si_reg       : byte_t := (others => '0');   -- S[i] value
-    signal sj_reg       : byte_t := (others => '0');   -- S[j] value
-    signal t_reg        : unsigned(7 downto 0) := (others => '0');  -- t index
+    signal si_reg       : byte_t;   -- S[i] value
+    signal sj_reg       : byte_t;   -- S[j] value
+    signal t_reg        : std_logic_vector(7 downto 0);  -- t index
 
     -- Key length register
-    signal key_len_reg  : unsigned(7 downto 0) := (others => '0');
+    signal key_len_reg  : std_logic_vector(7 downto 0);
 
     -- Keystream byte
-    signal keystream    : byte_t := (others => '0');
+    signal keystream    : byte_t;
 
     -- Output register
-    signal data_out_reg : byte_t := (others => '0');
-    signal data_rdy_reg : std_logic := '0';
+    signal data_out_reg : byte_t;
+    signal data_rdy_reg : std_logic;
+
+    -- Temporary variables for calculations
+    signal j_temp       : std_logic_vector(8 downto 0);
+    signal t_temp       : std_logic_vector(8 downto 0);
+    signal key_idx      : std_logic_vector(7 downto 0);
 
 begin
 
@@ -105,16 +111,30 @@ begin
     -- Output assignments
     data_out    <= data_out_reg;
     data_ready  <= data_rdy_reg;
-    busy        <= '1' when state /= IDLE and state /= PRGA_READY else '0';
+    busy        <= '0' when (state = IDLE or state = PRGA_READY) else '1';
     ready       <= '1' when state = PRGA_READY else '0';
 
-    -- Key address output (for external key ROM/RAM)
-    key_addr    <= i_cnt(7 downto 0) mod key_len_reg when key_len_reg /= 0 else (others => '0');
+    -- Key index calculation (i mod key_len)
+    -- Simple implementation: use modulo
+    process(i_cnt, key_len_reg)
+        variable idx : std_logic_vector(8 downto 0);
+    begin
+        idx := i_cnt;
+        -- Simple modulo for key index
+        if key_len_reg /= "00000000" then
+            while idx >= ('0' & key_len_reg) loop
+                idx := idx - ('0' & key_len_reg);
+            end loop;
+            key_idx <= idx(7 downto 0);
+        else
+            key_idx <= (others => '0');
+        end if;
+    end process;
+
+    key_addr <= key_idx;
 
     -- Main FSM process
     fsm_proc : process(clk)
-        variable j_temp : unsigned(8 downto 0);
-        variable t_temp : unsigned(8 downto 0);
     begin
         if rising_edge(clk) then
             if rst = '1' then
@@ -129,6 +149,10 @@ begin
                 data_rdy_reg<= '0';
                 sbox_we_a   <= '0';
                 sbox_we_b   <= '0';
+                sbox_addr_a <= (others => '0');
+                sbox_addr_b <= (others => '0');
+                sbox_din_a  <= (others => '0');
+                sbox_din_b  <= (others => '0');
             else
                 -- Default values
                 sbox_we_a   <= '0';
@@ -153,10 +177,10 @@ begin
                     when KSA_INIT =>
                         -- Write S[i] = i
                         sbox_addr_a <= i_cnt(7 downto 0);
-                        sbox_din_a  <= std_logic_vector(i_cnt(7 downto 0));
+                        sbox_din_a  <= i_cnt(7 downto 0);
                         sbox_we_a   <= '1';
 
-                        if i_cnt = 255 then
+                        if i_cnt(7 downto 0) = "11111111" then  -- 255
                             i_cnt <= (others => '0');
                             state <= KSA_READ_SI;
                         else
@@ -171,7 +195,7 @@ begin
                     when KSA_CALC_J =>
                         -- j = (j + S[i] + Key[i mod key_len]) mod 256
                         si_reg <= sbox_dout_a;
-                        j_temp := ('0' & j_cnt) + ('0' & unsigned(sbox_dout_a)) + ('0' & unsigned(key_data));
+                        j_temp <= ('0' & j_cnt) + ('0' & sbox_dout_a) + ('0' & key_data);
                         j_cnt  <= j_temp(7 downto 0);
 
                         -- Setup read of S[j]
@@ -203,7 +227,7 @@ begin
 
                     when KSA_NEXT =>
                         -- Check if KSA is complete
-                        if i_cnt = 255 then
+                        if i_cnt(7 downto 0) = "11111111" then  -- 255
                             -- KSA complete, reset counters for PRGA
                             i_cnt <= (others => '0');
                             j_cnt <= (others => '0');
@@ -235,7 +259,7 @@ begin
                     when PRGA_CALC_J =>
                         -- j = (j + S[i]) mod 256
                         si_reg <= sbox_dout_a;
-                        j_temp := ('0' & j_cnt) + ('0' & unsigned(sbox_dout_a));
+                        j_temp <= ('0' & j_cnt) + ('0' & sbox_dout_a);
                         j_cnt  <= j_temp(7 downto 0);
 
                         -- Setup read of S[j]
@@ -267,9 +291,8 @@ begin
 
                     when PRGA_CALC_T =>
                         -- t = (S[i] + S[j]) mod 256
-                        -- Note: After swap, si_reg has old S[i], sj_reg has old S[j]
-                        -- But S[i] now contains sj_reg and S[j] contains si_reg
-                        t_temp := ('0' & unsigned(sj_reg)) + ('0' & unsigned(si_reg));
+                        -- After swap: S[i]=sj_reg, S[j]=si_reg
+                        t_temp <= ('0' & sj_reg) + ('0' & si_reg);
                         t_reg  <= t_temp(7 downto 0);
 
                         -- Read S[t]

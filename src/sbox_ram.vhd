@@ -1,14 +1,16 @@
 --------------------------------------------------------------------------------
 -- S-box RAM - Dual-port RAM for RC4 S-box
--- Supports simultaneous read and write operations needed for swap
+-- Compatible with Xilinx ISE 8.1i (VHDL-93)
+-- For Spartan-3 FPGA
 --------------------------------------------------------------------------------
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 library work;
-use work.rc4_pkg.all;
+use work.rc4_pkg.ALL;
 
 entity sbox_ram is
     port (
@@ -29,8 +31,12 @@ entity sbox_ram is
 end entity sbox_ram;
 
 architecture rtl of sbox_ram is
-    -- S-box memory
+    -- S-box memory (will be inferred as Block RAM in Spartan-3)
     signal sbox_mem : sbox_mem_t := (others => (others => '0'));
+
+    -- Registered outputs for synchronous read
+    signal data_out_a_reg : byte_t;
+    signal data_out_b_reg : byte_t;
 
 begin
     -- Port A process
@@ -38,9 +44,9 @@ begin
     begin
         if rising_edge(clk) then
             if we_a = '1' then
-                sbox_mem(to_integer(addr_a)) <= data_in_a;
+                sbox_mem(conv_integer(addr_a)) <= data_in_a;
             end if;
-            data_out_a <= sbox_mem(to_integer(addr_a));
+            data_out_a_reg <= sbox_mem(conv_integer(addr_a));
         end if;
     end process;
 
@@ -49,10 +55,14 @@ begin
     begin
         if rising_edge(clk) then
             if we_b = '1' then
-                sbox_mem(to_integer(addr_b)) <= data_in_b;
+                sbox_mem(conv_integer(addr_b)) <= data_in_b;
             end if;
-            data_out_b <= sbox_mem(to_integer(addr_b));
+            data_out_b_reg <= sbox_mem(conv_integer(addr_b));
         end if;
     end process;
+
+    -- Output assignments
+    data_out_a <= data_out_a_reg;
+    data_out_b <= data_out_b_reg;
 
 end architecture rtl;
