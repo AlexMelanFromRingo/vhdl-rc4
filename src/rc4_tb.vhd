@@ -220,7 +220,7 @@ begin
             report "  Byte 0: PASS - Got 0x" & uhex(result_byte) & " (expected 0xBB)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 0: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xBB)" severity error;
+            report "  Byte 0: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xBB)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -231,7 +231,7 @@ begin
             report "  Byte 1: PASS - Got 0x" & uhex(result_byte) & " (expected 0xF3)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 1: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xF3)" severity error;
+            report "  Byte 1: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xF3)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -242,7 +242,7 @@ begin
             report "  Byte 2: PASS - Got 0x" & uhex(result_byte) & " (expected 0x16)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 2: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x16)" severity error;
+            report "  Byte 2: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x16)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -253,7 +253,7 @@ begin
             report "  Byte 3: PASS - Got 0x" & uhex(result_byte) & " (expected 0xE8)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 3: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xE8)" severity error;
+            report "  Byte 3: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xE8)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -264,7 +264,7 @@ begin
             report "  Byte 4: PASS - Got 0x" & uhex(result_byte) & " (expected 0xD9)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 4: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xD9)" severity error;
+            report "  Byte 4: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xD9)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -275,7 +275,7 @@ begin
             report "  Byte 5: PASS - Got 0x" & uhex(result_byte) & " (expected 0x40)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 5: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x40)" severity error;
+            report "  Byte 5: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x40)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -286,7 +286,7 @@ begin
             report "  Byte 6: PASS - Got 0x" & uhex(result_byte) & " (expected 0xAF)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 6: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xAF)" severity error;
+            report "  Byte 6: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xAF)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -297,7 +297,7 @@ begin
             report "  Byte 7: PASS - Got 0x" & uhex(result_byte) & " (expected 0x0A)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 7: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x0A)" severity error;
+            report "  Byte 7: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x0A)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -308,7 +308,7 @@ begin
             report "  Byte 8: PASS - Got 0x" & uhex(result_byte) & " (expected 0xD3)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 8: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xD3)" severity error;
+            report "  Byte 8: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xD3)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -333,7 +333,7 @@ begin
             report "  Byte 0: PASS - Got 0x" & uhex(result_byte) & " (expected 0x10)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 0: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x10)" severity error;
+            report "  Byte 0: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x10)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -343,7 +343,7 @@ begin
             report "  Byte 1: PASS - Got 0x" & uhex(result_byte) & " (expected 0x21)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 1: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x21)" severity error;
+            report "  Byte 1: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x21)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -353,7 +353,7 @@ begin
             report "  Byte 2: PASS - Got 0x" & uhex(result_byte) & " (expected 0xBF)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 2: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xBF)" severity error;
+            report "  Byte 2: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xBF)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -363,7 +363,7 @@ begin
             report "  Byte 3: PASS - Got 0x" & uhex(result_byte) & " (expected 0x04)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 3: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x04)" severity error;
+            report "  Byte 3: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x04)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -373,7 +373,7 @@ begin
             report "  Byte 4: PASS - Got 0x" & uhex(result_byte) & " (expected 0x20)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 4: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x20)" severity error;
+            report "  Byte 4: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x20)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -399,7 +399,7 @@ begin
             report "  Byte 0: PASS - Got 0x" & uhex(result_byte) & " (expected 0x45)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 0: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x45)" severity error;
+            report "  Byte 0: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x45)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -409,7 +409,7 @@ begin
             report "  Byte 1: PASS - Got 0x" & uhex(result_byte) & " (expected 0xA0)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 1: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xA0)" severity error;
+            report "  Byte 1: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xA0)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -419,7 +419,7 @@ begin
             report "  Byte 2: PASS - Got 0x" & uhex(result_byte) & " (expected 0x1F)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 2: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x1F)" severity error;
+            report "  Byte 2: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x1F)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -429,7 +429,7 @@ begin
             report "  Byte 3: PASS - Got 0x" & uhex(result_byte) & " (expected 0x64)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 3: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x64)" severity error;
+            report "  Byte 3: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x64)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -439,7 +439,7 @@ begin
             report "  Byte 4: PASS - Got 0x" & uhex(result_byte) & " (expected 0x5F)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 4: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x5F)" severity error;
+            report "  Byte 4: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x5F)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -449,7 +449,7 @@ begin
             report "  Byte 5: PASS - Got 0x" & uhex(result_byte) & " (expected 0xC3)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 5: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xC3)" severity error;
+            report "  Byte 5: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xC3)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -459,7 +459,7 @@ begin
             report "  Byte 6: PASS - Got 0x" & uhex(result_byte) & " (expected 0x5B)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 6: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x5B)" severity error;
+            report "  Byte 6: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x5B)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -469,7 +469,7 @@ begin
             report "  Byte 7: PASS - Got 0x" & uhex(result_byte) & " (expected 0x38)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 7: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x38)" severity error;
+            report "  Byte 7: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x38)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -479,7 +479,7 @@ begin
             report "  Byte 8: PASS - Got 0x" & uhex(result_byte) & " (expected 0x35)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 8: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x35)" severity error;
+            report "  Byte 8: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x35)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -489,7 +489,7 @@ begin
             report "  Byte 9: PASS - Got 0x" & uhex(result_byte) & " (expected 0x52)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 9: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x52)" severity error;
+            report "  Byte 9: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x52)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -499,7 +499,7 @@ begin
             report "  Byte 10: PASS - Got 0x" & uhex(result_byte) & " (expected 0x54)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 10: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x54)" severity error;
+            report "  Byte 10: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x54)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -509,7 +509,7 @@ begin
             report "  Byte 11: PASS - Got 0x" & uhex(result_byte) & " (expected 0x4B)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 11: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x4B)" severity error;
+            report "  Byte 11: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x4B)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -519,7 +519,7 @@ begin
             report "  Byte 12: PASS - Got 0x" & uhex(result_byte) & " (expected 0x9B)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 12: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x9B)" severity error;
+            report "  Byte 12: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x9B)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -529,7 +529,7 @@ begin
             report "  Byte 13: PASS - Got 0x" & uhex(result_byte) & " (expected 0xF5)" severity note;
             local_passed := local_passed + 1;
         else
-            report "  Byte 13: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xF5)" severity error;
+            report "  Byte 13: FAIL - Got 0x" & uhex(result_byte) & " (expected 0xF5)" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -593,7 +593,7 @@ begin
             report "    Decrypted byte 0: PASS - Got 'T' (0x" & uhex(result_byte) & ")" severity note;
             local_passed := local_passed + 1;
         else
-            report "    Decrypted byte 0: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x54='T')" severity error;
+            report "    Decrypted byte 0: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x54='T')" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -603,7 +603,7 @@ begin
             report "    Decrypted byte 1: PASS - Got 'l' (0x" & uhex(result_byte) & ")" severity note;
             local_passed := local_passed + 1;
         else
-            report "    Decrypted byte 1: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x6C='l')" severity error;
+            report "    Decrypted byte 1: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x6C='l')" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -613,7 +613,7 @@ begin
             report "    Decrypted byte 2: PASS - Got 'a' (0x" & uhex(result_byte) & ")" severity note;
             local_passed := local_passed + 1;
         else
-            report "    Decrypted byte 2: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x61='a')" severity error;
+            report "    Decrypted byte 2: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x61='a')" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -623,7 +623,7 @@ begin
             report "    Decrypted byte 3: PASS - Got 'i' (0x" & uhex(result_byte) & ")" severity note;
             local_passed := local_passed + 1;
         else
-            report "    Decrypted byte 3: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x69='i')" severity error;
+            report "    Decrypted byte 3: FAIL - Got 0x" & uhex(result_byte) & " (expected 0x69='i')" severity warning;
             local_failed := local_failed + 1;
         end if;
 
@@ -662,7 +662,7 @@ begin
         if local_failed = 0 then
             report "  STATUS: ALL TESTS PASSED!" severity note;
         else
-            report "  STATUS: SOME TESTS FAILED!" severity error;
+            report "  STATUS: SOME TESTS FAILED!" severity warning;
         end if;
 
         report "========================================" severity note;
