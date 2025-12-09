@@ -115,17 +115,20 @@ begin
     ready       <= '1' when state = PRGA_READY else '0';
 
     -- Key index calculation (i mod key_len)
-    -- Simple implementation: use modulo
+    -- Safe implementation that handles uninitialized values
     process(i_cnt, key_len_reg)
-        variable idx : std_logic_vector(8 downto 0);
+        variable idx : integer;
+        variable klen : integer;
     begin
-        idx := i_cnt;
-        -- Simple modulo for key index
-        if key_len_reg /= "00000000" then
-            while idx >= ('0' & key_len_reg) loop
-                idx := idx - ('0' & key_len_reg);
-            end loop;
-            key_idx <= idx(7 downto 0);
+        -- Check for valid (non-X) values before calculation
+        if (is_x(i_cnt) = false) and (is_x(key_len_reg) = false) then
+            idx := conv_integer(i_cnt);
+            klen := conv_integer(key_len_reg);
+            if klen > 0 then
+                key_idx <= conv_std_logic_vector(idx mod klen, 8);
+            else
+                key_idx <= (others => '0');
+            end if;
         else
             key_idx <= (others => '0');
         end if;

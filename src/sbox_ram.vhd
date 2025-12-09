@@ -34,9 +34,9 @@ architecture rtl of sbox_ram is
     -- S-box memory (will be inferred as Block RAM in Spartan-3)
     signal sbox_mem : sbox_mem_t := (others => (others => '0'));
 
-    -- Registered outputs for synchronous read
-    signal data_out_a_reg : byte_t;
-    signal data_out_b_reg : byte_t;
+    -- Registered outputs for synchronous read (initialized to avoid 'U' warnings)
+    signal data_out_a_reg : byte_t := (others => '0');
+    signal data_out_b_reg : byte_t := (others => '0');
 
 begin
     -- Port A process
