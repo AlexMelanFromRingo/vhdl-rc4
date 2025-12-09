@@ -1,12 +1,6 @@
--- RC4 Cipher: Основна реалізація
+-- RC4 Cipher: Основна реалізація (виправлена версія)
 -- Автор: CleverBot
--- Опис: Реалізація RC4 для Xilinx ISE 8.1i / Spartan-3
---
--- Особливості:
---   - KSA виконується за 256 тактів (1 такт на ітерацію)
---   - PRGA виконується за 4 такти на байт
---   - Підтримка ключів від 1 до 256 байт
---   - Асинхронний reset
+-- Опис: Спрощена реалізація RC4 з правильною обробкою S-box
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -19,23 +13,23 @@ entity rc4_cipher is
         reset       : in  std_logic;
 
         -- Керуючі сигнали
-        start       : in  std_logic;                    -- Старт ініціалізації
-        key_length  : in  unsigned(7 downto 0);         -- Довжина ключа (1-256)
+        start       : in  std_logic;
+        key_length  : in  unsigned(7 downto 0);
 
-        -- Вхідні дані ключа
-        key_in      : in  unsigned(7 downto 0);         -- Байт ключа
-        key_valid   : in  std_logic;                    -- Валідність байту ключа
+        -- Вхідні дані
+        key_in      : in  unsigned(7 downto 0);
+        key_valid   : in  std_logic;
 
-        -- Вхідні/вихідні дані
-        data_in     : in  unsigned(7 downto 0);         -- Вхідний байт (plaintext/ciphertext)
-        data_valid  : in  std_logic;                    -- Валідність вхідного байту
-        data_out    : out unsigned(7 downto 0);         -- Вихідний байт (ciphertext/plaintext)
-        data_ready  : out std_logic;                    -- Вихідний байт готовий
+        data_in     : in  unsigned(7 downto 0);
+        data_valid  : in  std_logic;
+
+        -- Вихідні дані
+        data_out    : out unsigned(7 downto 0);
+        data_ready  : out std_logic;
 
         -- Статус
-        busy        : out std_logic;                    -- Модуль зайнятий
-        ksa_done    : out std_logic;                    -- KSA завершено, готовий до шифрування
-        err_out     : out std_logic                     -- Помилка (невірна довжина ключа)
+        busy        : out std_logic;
+        ksa_done    : out std_logic
     );
 end rc4_cipher;
 
@@ -52,12 +46,9 @@ architecture Behavioral of rc4_cipher is
     signal i, j : unsigned(7 downto 0);
     signal cnt : unsigned(7 downto 0);
 
-    -- Тимчасові змінні для PRGA
+    -- Тимчасові змінні
     signal si, sj : unsigned(7 downto 0);
     signal t_val : unsigned(7 downto 0);
-
-    -- Збереження вхідного байту для XOR
-    signal data_in_reg : unsigned(7 downto 0);
 
     -- FSM
     signal state : state_type;
@@ -73,43 +64,28 @@ begin
             i <= (others => '0');
             j <= (others => '0');
             key_idx <= (others => '0');
-            key_len <= (others => '0');
             data_out <= (others => '0');
-            data_in_reg <= (others => '0');
             data_ready <= '0';
             busy <= '0';
             ksa_done <= '0';
-            err_out <= '0';
-            si <= (others => '0');
-            sj <= (others => '0');
-            t_val <= (others => '0');
 
         elsif rising_edge(clk) then
-            -- Скидання одноразових сигналів
             data_ready <= '0';
 
             case state is
                 -- Стан очікування
                 when IDLE =>
                     busy <= '0';
-                    err_out <= '0';
+                    ksa_done <= '0';
+                    cnt <= (others => '0');
+                    i <= (others => '0');
+                    j <= (others => '0');
+                    key_idx <= (others => '0');
 
                     if start = '1' then
-                        -- Перевірка довжини ключа (1-255 байт)
-                        if key_length = 0 then
-                            -- Помилка: нульова довжина ключа
-                            err_out <= '1';
-                        else
-                            key_len <= key_length;
-                            -- Скидання ksa_done при новому запуску
-                            ksa_done <= '0';
-                            busy <= '1';
-                            cnt <= (others => '0');
-                            i <= (others => '0');
-                            j <= (others => '0');
-                            key_idx <= (others => '0');
-                            state <= INIT_SBOX;
-                        end if;
+                        key_len <= key_length;
+                        busy <= '1';
+                        state <= INIT_SBOX;
                     end if;
 
                 -- Ініціалізація S-box
@@ -160,8 +136,6 @@ begin
                 -- Готовність до шифрування
                 when PRGA_READY =>
                     if data_valid = '1' then
-                        -- Зберігаємо вхідний байт
-                        data_in_reg <= data_in;
                         state <= PRGA_I_UPDATE;
                     end if;
 
@@ -188,15 +162,10 @@ begin
 
                 -- Генерація виходу
                 when PRGA_OUTPUT =>
-                    -- output = input XOR S[t]
-                    data_out <= data_in_reg xor sbox(to_integer(t_val));
+                    -- Читаємо S[t]
+                    data_out <= data_in xor sbox(to_integer(t_val));
                     data_ready <= '1';
                     state <= PRGA_READY;
-
-                -- Стан завершення (для явного завершення сесії)
-                when DONE =>
-                    busy <= '0';
-                    -- Залишаємось у DONE до reset
 
                 when others =>
                     state <= IDLE;
