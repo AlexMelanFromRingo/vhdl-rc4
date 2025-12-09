@@ -2,6 +2,8 @@
 -- S-box RAM - Dual-port RAM for RC4 S-box
 -- Compatible with Xilinx ISE 8.1i (VHDL-93)
 -- For Spartan-3 FPGA
+--
+-- OPTIMIZED: Safe address handling to avoid CONV_INTEGER warnings
 --------------------------------------------------------------------------------
 
 library IEEE;
@@ -34,9 +36,19 @@ architecture rtl of sbox_ram is
     -- S-box memory (will be inferred as Block RAM in Spartan-3)
     signal sbox_mem : sbox_mem_t := (others => (others => '0'));
 
-    -- Registered outputs for synchronous read (initialized to avoid 'U' warnings)
+    -- Registered outputs
     signal data_out_a_reg : byte_t := (others => '0');
     signal data_out_b_reg : byte_t := (others => '0');
+
+    -- Safe address conversion function
+    function safe_addr(addr : std_logic_vector(7 downto 0)) return integer is
+    begin
+        if is_x(addr) then
+            return 0;
+        else
+            return conv_integer(addr);
+        end if;
+    end function;
 
 begin
     -- Port A process
@@ -44,9 +56,9 @@ begin
     begin
         if rising_edge(clk) then
             if we_a = '1' then
-                sbox_mem(conv_integer(addr_a)) <= data_in_a;
+                sbox_mem(safe_addr(addr_a)) <= data_in_a;
             end if;
-            data_out_a_reg <= sbox_mem(conv_integer(addr_a));
+            data_out_a_reg <= sbox_mem(safe_addr(addr_a));
         end if;
     end process;
 
@@ -55,9 +67,9 @@ begin
     begin
         if rising_edge(clk) then
             if we_b = '1' then
-                sbox_mem(conv_integer(addr_b)) <= data_in_b;
+                sbox_mem(safe_addr(addr_b)) <= data_in_b;
             end if;
-            data_out_b_reg <= sbox_mem(conv_integer(addr_b));
+            data_out_b_reg <= sbox_mem(safe_addr(addr_b));
         end if;
     end process;
 
