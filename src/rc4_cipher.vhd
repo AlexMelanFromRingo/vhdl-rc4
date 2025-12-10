@@ -41,6 +41,7 @@ architecture Behavioral of rc4_cipher is
     signal key_mem : key_type;
     signal key_len : unsigned(7 downto 0);
     signal key_idx : unsigned(7 downto 0);
+    signal ksa_key_idx : unsigned(7 downto 0);  -- Індекс ключа для KSA (замість mod)
 
     -- Індекси та лічильники
     signal i, j : unsigned(7 downto 0);
@@ -64,6 +65,7 @@ begin
             i <= (others => '0');
             j <= (others => '0');
             key_idx <= (others => '0');
+            ksa_key_idx <= (others => '0');
             data_out <= (others => '0');
             data_ready <= '0';
             busy <= '0';
@@ -81,6 +83,7 @@ begin
                     i <= (others => '0');
                     j <= (others => '0');
                     key_idx <= (others => '0');
+                    ksa_key_idx <= (others => '0');
 
                     if start = '1' then
                         key_len <= key_length;
@@ -111,9 +114,9 @@ begin
                     -- Читаємо S[cnt]
                     si <= sbox(to_integer(cnt));
 
-                    -- Обчислюємо новий j
+                    -- Обчислюємо новий j (використовуємо ksa_key_idx замість cnt mod key_len)
                     new_j := j + sbox(to_integer(cnt)) +
-                             key_mem(to_integer(cnt mod key_len));
+                             key_mem(to_integer(ksa_key_idx));
 
                     -- Читаємо S[new_j]
                     sj <= sbox(to_integer(new_j));
@@ -123,6 +126,13 @@ begin
                     sbox(to_integer(new_j)) <= sbox(to_integer(cnt));
 
                     j <= new_j;
+
+                    -- Оновлення індексу ключа (циклічний лічильник замість mod)
+                    if ksa_key_idx = key_len - 1 then
+                        ksa_key_idx <= (others => '0');
+                    else
+                        ksa_key_idx <= ksa_key_idx + 1;
+                    end if;
 
                     if cnt = 255 then
                         ksa_done <= '1';
