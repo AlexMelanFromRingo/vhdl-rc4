@@ -1,33 +1,33 @@
--- RC4 Package: Типи та константи
--- Автор: CleverBot
--- Проект: Реалізація RC4 шифру
+-- RC4 Package: Types and constants
+-- Author: Alex Melan
+-- Project: RC4 Stream Cipher Implementation
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 package rc4_package is
-    -- Константи
+    -- Constants
     constant SBOX_SIZE : integer := 256;
     constant MAX_KEY_LEN : integer := 256;
 
-    -- Типи для S-box
+    -- S-box type (256 bytes)
     type sbox_type is array (0 to SBOX_SIZE-1) of unsigned(7 downto 0);
 
-    -- Типи для ключа
+    -- Key memory type (up to 256 bytes)
     type key_type is array (0 to MAX_KEY_LEN-1) of unsigned(7 downto 0);
 
-    -- Стани FSM
+    -- FSM states
     type state_type is (
-        IDLE,           -- Очікування
-        INIT_SBOX,      -- Ініціалізація S-box (S[i] = i)
+        IDLE,           -- Waiting for start
+        INIT_SBOX,      -- S-box initialization (S[i] = i)
         KSA_PROCESS,    -- Key-Scheduling Algorithm
-        PRGA_READY,     -- Готовність до шифрування
-        PRGA_I_UPDATE,  -- Оновлення i
-        PRGA_J_UPDATE,  -- Оновлення j
-        PRGA_SWAP,      -- Обмін S[i] та S[j]
-        PRGA_OUTPUT,    -- Генерація вихідного байту
-        DONE            -- Завершення
+        PRGA_READY,     -- Ready for encryption/decryption
+        PRGA_I_UPDATE,  -- Update index i
+        PRGA_J_UPDATE,  -- Update index j
+        PRGA_SWAP,      -- Swap S[i] and S[j]
+        PRGA_OUTPUT,    -- Generate output byte
+        DONE            -- Operation complete
     );
 
 end package rc4_package;

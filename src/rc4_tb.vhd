@@ -1,6 +1,6 @@
--- RC4 Testbench: Розширене тестування шифру
--- Автор: CleverBot
--- Тестові вектори:
+-- RC4 Testbench: Cipher verification
+-- Author: Alex Melan
+-- Test vectors:
 --   1. Key="Key", Plaintext="Plaintext" -> BB F3 16 E8 D9 40 AF 0A D3
 --   2. Key="Wiki", Plaintext="pedia" -> 10 21 BF 04 20
 --   3. Key="Secret", Plaintext="Attack at dawn" -> 45 A0 1F 64 5F C3 5B 38 35 52 54 4B 9B F5
@@ -14,7 +14,7 @@ entity rc4_tb is
 end rc4_tb;
 
 architecture Behavioral of rc4_tb is
-    -- Компонент для тестування
+    -- Component under test
     component rc4_cipher
         Port (
             clk         : in  std_logic;
@@ -32,7 +32,7 @@ architecture Behavioral of rc4_tb is
         );
     end component;
 
-    -- Сигнали
+    -- Test signals
     signal clk : std_logic := '0';
     signal reset : std_logic := '0';
     signal start : std_logic := '0';
@@ -46,10 +46,10 @@ architecture Behavioral of rc4_tb is
     signal busy : std_logic;
     signal ksa_done : std_logic;
 
-    -- Константи часу
+    -- Clock period
     constant clk_period : time := 10 ns;
 
-    -- Функція to_hstring для старих версій VHDL
+    -- to_hstring function for VHDL-93 compatibility
     function to_hstring(slv : std_logic_vector) return string is
         variable four_bit : std_logic_vector(3 downto 0);
         variable result : string(1 to (slv'length+3)/4);
@@ -85,7 +85,7 @@ architecture Behavioral of rc4_tb is
 
 begin
 
-    -- Інстанціювання модуля
+    -- Unit Under Test instantiation
     UUT: rc4_cipher
         port map (
             clk => clk,
@@ -102,7 +102,7 @@ begin
             ksa_done => ksa_done
         );
 
-    -- Генерація тактового сигналу
+    -- Clock generation
     clk_process: process
     begin
         clk <= '0';
@@ -111,10 +111,10 @@ begin
         wait for clk_period/2;
     end process;
 
-    -- Основний тестовий процес
+    -- Main test process
     stim_process: process
     begin
-        -- Початковий reset
+        -- Initial reset
         reset <= '1';
         wait for clk_period * 2;
         reset <= '0';
@@ -123,16 +123,16 @@ begin
         report "=== RC4 Test Start ===" severity note;
         report "Test Vector 1: Key='Key', Plaintext='Plaintext'" severity note;
 
-        -- Налаштування довжини ключа
+        -- Set key length
         key_length <= to_unsigned(3, 8);
         wait for clk_period;
 
-        -- Запуск ініціалізації
+        -- Start initialization
         start <= '1';
         wait for clk_period;
         start <= '0';
 
-        -- Завантаження ключа "Key" = 0x4B 0x65 0x79
+        -- Load key "Key" = 0x4B 0x65 0x79
         wait for clk_period;
         key_in <= x"4B"; key_valid <= '1'; wait for clk_period; key_valid <= '0';
         wait for clk_period;
@@ -140,13 +140,13 @@ begin
         wait for clk_period;
         key_in <= x"79"; key_valid <= '1'; wait for clk_period; key_valid <= '0';
 
-        -- Очікування завершення KSA
+        -- Wait for KSA completion
         report "Waiting for KSA completion..." severity note;
         wait until ksa_done = '1';
         wait for clk_period * 10;
         report "KSA completed!" severity note;
 
-        -- Шифрування "Plaintext" = 50 6C 61 69 6E 74 65 78 74
+        -- Encrypt "Plaintext" = 50 6C 61 69 6E 74 65 78 74
         -- Expected: BB F3 16 E8 D9 40 AF 0A D3
         report "Starting encryption..." severity note;
 
@@ -259,7 +259,7 @@ begin
         wait for clk_period;
         start <= '0';
 
-        -- Ключ "Wiki" = 57 69 6B 69
+        -- Key "Wiki" = 57 69 6B 69
         wait for clk_period;
         key_in <= x"57"; key_valid <= '1'; wait for clk_period; key_valid <= '0';
         wait for clk_period;
@@ -317,7 +317,7 @@ begin
         wait for clk_period;
         start <= '0';
 
-        -- Ключ "Secret" = 53 65 63 72 65 74
+        -- Key "Secret" = 53 65 63 72 65 74
         wait for clk_period;
         key_in <= x"53"; key_valid <= '1'; wait for clk_period; key_valid <= '0';
         wait for clk_period;

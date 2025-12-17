@@ -1,6 +1,13 @@
--- RC4 Cipher: Основна реалізація (виправлена версія)
--- Автор: CleverBot
--- Опис: Спрощена реалізація RC4 з правильною обробкою S-box
+-- RC4 Stream Cipher: Full Implementation
+-- Author: Alex Melan
+-- Target: Xilinx Spartan-3 / ISE 8.1i
+--
+-- Description:
+--   Complete RC4 stream cipher implementation with:
+--   - KSA (Key-Scheduling Algorithm): 256 iterations
+--   - PRGA (Pseudo-Random Generation Algorithm): 4 cycles per byte
+--   - Support for keys from 1 to 255 bytes
+--   - Synthesizable design (no mod operator with variable)
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -12,46 +19,45 @@ entity rc4_cipher is
         clk         : in  std_logic;
         reset       : in  std_logic;
 
-        -- Керуючі сигнали
+        -- Control signals
         start       : in  std_logic;
         key_length  : in  unsigned(7 downto 0);
 
-        -- Вхідні дані
+        -- Key input
         key_in      : in  unsigned(7 downto 0);
         key_valid   : in  std_logic;
 
+        -- Data input/output
         data_in     : in  unsigned(7 downto 0);
         data_valid  : in  std_logic;
-
-        -- Вихідні дані
         data_out    : out unsigned(7 downto 0);
         data_ready  : out std_logic;
 
-        -- Статус
+        -- Status
         busy        : out std_logic;
         ksa_done    : out std_logic
     );
 end rc4_cipher;
 
 architecture Behavioral of rc4_cipher is
-    -- S-box пам'ять
+    -- S-box memory (256 bytes)
     signal sbox : sbox_type;
 
-    -- Ключ
+    -- Key storage
     signal key_mem : key_type;
     signal key_len : unsigned(7 downto 0);
     signal key_idx : unsigned(7 downto 0);
-    signal ksa_key_idx : unsigned(7 downto 0);  -- Індекс ключа для KSA (замість mod)
+    signal ksa_key_idx : unsigned(7 downto 0);  -- Key index for KSA (cyclic counter)
 
-    -- Індекси та лічильники
+    -- RC4 indices and counters
     signal i, j : unsigned(7 downto 0);
     signal cnt : unsigned(7 downto 0);
 
-    -- Тимчасові змінні
+    -- Temporary values
     signal si, sj : unsigned(7 downto 0);
     signal t_val : unsigned(7 downto 0);
 
-    -- FSM
+    -- FSM state
     signal state : state_type;
 
 begin
@@ -75,7 +81,7 @@ begin
             data_ready <= '0';
 
             case state is
-                -- Стан очікування
+                -- Idle state: waiting for start signal
                 when IDLE =>
                     busy <= '0';
                     ksa_done <= '0';
@@ -91,11 +97,11 @@ begin
                         state <= INIT_SBOX;
                     end if;
 
-                -- Ініціалізація S-box
+                -- S-box initialization: S[i] = i for i = 0..255
                 when INIT_SBOX =>
                     sbox(to_integer(cnt)) <= cnt;
 
-                    -- Паралельно завантажуємо ключ
+                    -- Load key bytes in parallel
                     if key_valid = '1' and key_idx < key_len then
                         key_mem(to_integer(key_idx)) <= key_in;
                         key_idx <= key_idx + 1;
@@ -109,25 +115,26 @@ begin
                         cnt <= cnt + 1;
                     end if;
 
-                -- Key Scheduling Algorithm
+                -- KSA: Key-Scheduling Algorithm
+                -- for i = 0 to 255:
+                --   j = (j + S[i] + key[i mod keylen]) mod 256
+                --   swap(S[i], S[j])
                 when KSA_PROCESS =>
-                    -- Читаємо S[cnt]
                     si <= sbox(to_integer(cnt));
 
-                    -- Обчислюємо новий j (використовуємо ksa_key_idx замість cnt mod key_len)
+                    -- Calculate new j using cyclic key index
                     new_j := j + sbox(to_integer(cnt)) +
                              key_mem(to_integer(ksa_key_idx));
 
-                    -- Читаємо S[new_j]
                     sj <= sbox(to_integer(new_j));
 
-                    -- Записуємо swap: S[cnt] = S[new_j], S[new_j] = S[cnt]
+                    -- Swap S[cnt] and S[new_j]
                     sbox(to_integer(cnt)) <= sbox(to_integer(new_j));
                     sbox(to_integer(new_j)) <= sbox(to_integer(cnt));
 
                     j <= new_j;
 
-                    -- Оновлення індексу ключа (циклічний лічильник замість mod)
+                    -- Update key index (cyclic counter instead of mod)
                     if ksa_key_idx = key_len - 1 then
                         ksa_key_idx <= (others => '0');
                     else
@@ -143,36 +150,35 @@ begin
                         cnt <= cnt + 1;
                     end if;
 
-                -- Готовність до шифрування
+                -- PRGA ready: waiting for data to encrypt/decrypt
                 when PRGA_READY =>
                     if data_valid = '1' then
                         state <= PRGA_I_UPDATE;
                     end if;
 
-                -- i = i + 1
+                -- PRGA step 1: i = (i + 1) mod 256
                 when PRGA_I_UPDATE =>
                     i <= i + 1;
                     si <= sbox(to_integer(i + 1));
                     state <= PRGA_J_UPDATE;
 
-                -- j = j + S[i]
+                -- PRGA step 2: j = (j + S[i]) mod 256
                 when PRGA_J_UPDATE =>
                     j <= j + si;
                     sj <= sbox(to_integer(j + si));
                     state <= PRGA_SWAP;
 
-                -- Swap S[i] та S[j]
+                -- PRGA step 3: swap(S[i], S[j])
                 when PRGA_SWAP =>
                     sbox(to_integer(i)) <= sj;
                     sbox(to_integer(j)) <= si;
 
-                    -- t = S[i] + S[j]
+                    -- t = (S[i] + S[j]) mod 256
                     t_val <= si + sj;
                     state <= PRGA_OUTPUT;
 
-                -- Генерація виходу
+                -- PRGA step 4: output = input XOR S[t]
                 when PRGA_OUTPUT =>
-                    -- Читаємо S[t]
                     data_out <= data_in xor sbox(to_integer(t_val));
                     data_ready <= '1';
                     state <= PRGA_READY;
