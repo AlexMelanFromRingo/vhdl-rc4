@@ -66,7 +66,7 @@ end rc4_cipher;
 
 ### Simulation
 ```
-run 45 us
+run 25 us
 ```
 
 ### Basic Operation Sequence
