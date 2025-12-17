@@ -1,9 +1,10 @@
 -- RC4 Testbench: Cipher verification
 -- Author: Alex Melan
 -- Test vectors:
---   1. Key="Key", Plaintext="Plaintext" -> BB F3 16 E8 D9 40 AF 0A D3
---   2. Key="Wiki", Plaintext="pedia" -> 10 21 BF 04 20
---   3. Key="Secret", Plaintext="Attack at dawn" -> 45 A0 1F 64 5F C3 5B 38 35 52 54 4B 9B F5
+--   1. Key="Key", Plaintext="Plaintext" -> BB F3 16 E8 D9 40 AF 0A D3 (encryption)
+--   2. Key="Wiki", Plaintext="pedia" -> 10 21 BF 04 20 (encryption)
+--   3. Key="Secret", Plaintext="Attack at dawn" -> 45 A0 1F 64 5F C3 5B 38 35 52 54 4B 9B F5 (encryption)
+--   4. Key="Key", Ciphertext from test 1 -> "Plaintext" (decryption verification)
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -406,6 +407,132 @@ begin
         report "Byte 13: 0x" & to_hstring(std_logic_vector(data_out)) & " (expected: 0xF5)" severity note;
 
         report "=== Test Vector 3 Complete ===" severity note;
+        wait for clk_period * 10;
+
+        -----------------------------------------------------------------------
+        -- TEST 4: Decryption verification
+        -- Decrypt ciphertext from Test 1 back to plaintext
+        -- Key="Key", Ciphertext=BB F3 16 E8 D9 40 AF 0A D3 -> "Plaintext"
+        -----------------------------------------------------------------------
+        report "=== Test Vector 4: DECRYPTION TEST ===" severity note;
+        report "Decrypting ciphertext from Test 1 back to plaintext" severity note;
+
+        reset <= '1';
+        wait for clk_period * 2;
+        reset <= '0';
+        wait for clk_period;
+
+        key_length <= to_unsigned(3, 8);
+        start <= '1';
+        wait for clk_period;
+        start <= '0';
+
+        -- Load same key "Key" = 0x4B 0x65 0x79
+        wait for clk_period;
+        key_in <= x"4B"; key_valid <= '1'; wait for clk_period; key_valid <= '0';
+        wait for clk_period;
+        key_in <= x"65"; key_valid <= '1'; wait for clk_period; key_valid <= '0';
+        wait for clk_period;
+        key_in <= x"79"; key_valid <= '1'; wait for clk_period; key_valid <= '0';
+
+        wait until ksa_done = '1';
+        wait for clk_period * 10;
+        report "KSA completed, starting decryption..." severity note;
+
+        -- Decrypt ciphertext BB F3 16 E8 D9 40 AF 0A D3
+        -- Expected plaintext: "Plaintext" = 50 6C 61 69 6E 74 65 78 74
+
+        -- Byte 0: BB -> 'P' (0x50)
+        wait for clk_period;
+        data_in <= x"BB"; data_valid <= '1'; wait for clk_period; data_valid <= '0';
+        wait until data_ready = '1'; wait for clk_period;
+        if data_out = x"50" then
+            report "Byte 0: PASS - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " = 'P' (expected: 0x50)" severity note;
+        else
+            report "Byte 0: FAIL - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " (expected: 0x50 = 'P')" severity warning;
+        end if;
+        wait for clk_period * 5;
+
+        -- Byte 1: F3 -> 'l' (0x6C)
+        data_in <= x"F3"; data_valid <= '1'; wait for clk_period; data_valid <= '0';
+        wait until data_ready = '1'; wait for clk_period;
+        if data_out = x"6C" then
+            report "Byte 1: PASS - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " = 'l' (expected: 0x6C)" severity note;
+        else
+            report "Byte 1: FAIL - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " (expected: 0x6C = 'l')" severity warning;
+        end if;
+        wait for clk_period * 5;
+
+        -- Byte 2: 16 -> 'a' (0x61)
+        data_in <= x"16"; data_valid <= '1'; wait for clk_period; data_valid <= '0';
+        wait until data_ready = '1'; wait for clk_period;
+        if data_out = x"61" then
+            report "Byte 2: PASS - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " = 'a' (expected: 0x61)" severity note;
+        else
+            report "Byte 2: FAIL - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " (expected: 0x61 = 'a')" severity warning;
+        end if;
+        wait for clk_period * 5;
+
+        -- Byte 3: E8 -> 'i' (0x69)
+        data_in <= x"E8"; data_valid <= '1'; wait for clk_period; data_valid <= '0';
+        wait until data_ready = '1'; wait for clk_period;
+        if data_out = x"69" then
+            report "Byte 3: PASS - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " = 'i' (expected: 0x69)" severity note;
+        else
+            report "Byte 3: FAIL - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " (expected: 0x69 = 'i')" severity warning;
+        end if;
+        wait for clk_period * 5;
+
+        -- Byte 4: D9 -> 'n' (0x6E)
+        data_in <= x"D9"; data_valid <= '1'; wait for clk_period; data_valid <= '0';
+        wait until data_ready = '1'; wait for clk_period;
+        if data_out = x"6E" then
+            report "Byte 4: PASS - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " = 'n' (expected: 0x6E)" severity note;
+        else
+            report "Byte 4: FAIL - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " (expected: 0x6E = 'n')" severity warning;
+        end if;
+        wait for clk_period * 5;
+
+        -- Byte 5: 40 -> 't' (0x74)
+        data_in <= x"40"; data_valid <= '1'; wait for clk_period; data_valid <= '0';
+        wait until data_ready = '1'; wait for clk_period;
+        if data_out = x"74" then
+            report "Byte 5: PASS - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " = 't' (expected: 0x74)" severity note;
+        else
+            report "Byte 5: FAIL - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " (expected: 0x74 = 't')" severity warning;
+        end if;
+        wait for clk_period * 5;
+
+        -- Byte 6: AF -> 'e' (0x65)
+        data_in <= x"AF"; data_valid <= '1'; wait for clk_period; data_valid <= '0';
+        wait until data_ready = '1'; wait for clk_period;
+        if data_out = x"65" then
+            report "Byte 6: PASS - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " = 'e' (expected: 0x65)" severity note;
+        else
+            report "Byte 6: FAIL - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " (expected: 0x65 = 'e')" severity warning;
+        end if;
+        wait for clk_period * 5;
+
+        -- Byte 7: 0A -> 'x' (0x78)
+        data_in <= x"0A"; data_valid <= '1'; wait for clk_period; data_valid <= '0';
+        wait until data_ready = '1'; wait for clk_period;
+        if data_out = x"78" then
+            report "Byte 7: PASS - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " = 'x' (expected: 0x78)" severity note;
+        else
+            report "Byte 7: FAIL - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " (expected: 0x78 = 'x')" severity warning;
+        end if;
+        wait for clk_period * 5;
+
+        -- Byte 8: D3 -> 't' (0x74)
+        data_in <= x"D3"; data_valid <= '1'; wait for clk_period; data_valid <= '0';
+        wait until data_ready = '1'; wait for clk_period;
+        if data_out = x"74" then
+            report "Byte 8: PASS - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " = 't' (expected: 0x74)" severity note;
+        else
+            report "Byte 8: FAIL - Decrypted: 0x" & to_hstring(std_logic_vector(data_out)) & " (expected: 0x74 = 't')" severity warning;
+        end if;
+
+        report "=== Test Vector 4 Complete ===" severity note;
         report "=== All Tests Complete ===" severity note;
 
         wait;

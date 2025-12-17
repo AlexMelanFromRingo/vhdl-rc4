@@ -22,7 +22,7 @@ The implementation consists of three main components:
 |------|-------------|
 | `rc4_package.vhd` | Types, constants, and FSM state definitions |
 | `rc4_cipher.vhd` | Main RC4 cipher module |
-| `rc4_tb.vhd` | Testbench with 3 test vectors |
+| `rc4_tb.vhd` | Testbench with 4 test vectors |
 
 ## RC4 Algorithm
 
@@ -66,7 +66,7 @@ end rc4_cipher;
 
 ### Simulation
 ```
-run 35 us
+run 45 us
 ```
 
 ### Basic Operation Sequence
@@ -80,11 +80,21 @@ run 35 us
 
 ## Test Vectors
 
+### Encryption Tests
+
 | # | Key | Plaintext | Expected Ciphertext |
 |---|-----|-----------|---------------------|
 | 1 | "Key" | "Plaintext" | BB F3 16 E8 D9 40 AF 0A D3 |
 | 2 | "Wiki" | "pedia" | 10 21 BF 04 20 |
 | 3 | "Secret" | "Attack at dawn" | 45 A0 1F 64 5F C3 5B 38 35 52 54 4B 9B F5 |
+
+### Decryption Test
+
+| # | Key | Ciphertext | Expected Plaintext |
+|---|-----|------------|-------------------|
+| 4 | "Key" | BB F3 16 E8 D9 40 AF 0A D3 | "Plaintext" |
+
+Test 4 verifies that RC4 is symmetric: decrypting the ciphertext from Test 1 recovers the original plaintext.
 
 ## Timing
 
