@@ -1,0 +1,7 @@
+# GHDL build artefacts
+sim/work/
+*.o
+*.cf
+*.ghw
+*.vcd
+work-obj*.cf
