@@ -5,3 +5,6 @@ sim/work/
 *.ghw
 *.vcd
 work-obj*.cf
+
+# Synthesis artefacts (logs are large; regenerate with ./synth/run_synth.sh)
+synth/out/

@@ -27,13 +27,17 @@ package kalyna_package is
     -- Неконстрейнений тип: одні й ті самі функції обслуговують Nb = 2, 4, 8
     type state_t is array (natural range <>) of word64_t;
 
+    -- Таблиці записані як 4 x 256 (читабельно), але у синтез ідуть
+    -- ПЛОСКИМИ: sbox(256*k + b). Вкладений масив змушує синтезатор
+    -- бачити частковий доступ до пам'яті замість звичайного ПЗП.
     type kbox_t   is array (0 to 255) of byte_t;
     type kboxes_t is array (0 to 3)   of kbox_t;
+    type sbox_flat_t is array (0 to 1023) of byte_t;
     type mds_row_t is array (0 to 7)  of byte_t;
     type mds_t     is array (0 to 7, 0 to 7) of byte_t;
 
-    constant SBOX_ENC : kboxes_t;      -- pi_0 .. pi_3
-    constant SBOX_DEC : kboxes_t;      -- обернені (будуються на елаборації)
+    constant SBOX_ENC : sbox_flat_t;   -- pi_0 .. pi_3, склеєні
+    constant SBOX_DEC : sbox_flat_t;   -- обернені (будуються на елаборації)
 
     -- Обидві MDS-матриці циркулянтні, тож задано лише перший рядок
     constant MDS_ROW0     : mds_row_t := (x"01", x"01", x"05", x"01",
@@ -76,7 +80,7 @@ end package kalyna_package;
 
 package body kalyna_package is
 
-    constant SBOX_ENC : kboxes_t := (
+    constant SBOX_ENC_TAB : kboxes_t := (
         -- pi_0
         (
         x"a8", x"43", x"5f", x"06", x"6b", x"75", x"6c", x"59",
@@ -218,18 +222,31 @@ package body kalyna_package is
         x"7f", x"91", x"b8", x"c9", x"57", x"1b", x"e0", x"61"
         ));
 
-    function build_sbox_dec return kboxes_t is
-        variable d : kboxes_t := (others => (others => (others => '0')));
+    function flatten(t : kboxes_t) return sbox_flat_t is
+        variable f : sbox_flat_t;
     begin
         for k in 0 to 3 loop
             for b in 0 to 255 loop
-                d(k)(to_integer(SBOX_ENC(k)(b))) := to_unsigned(b, 8);
+                f(256*k + b) := t(k)(b);
+            end loop;
+        end loop;
+        return f;
+    end function flatten;
+
+    constant SBOX_ENC : sbox_flat_t := flatten(SBOX_ENC_TAB);
+
+    function build_sbox_dec return sbox_flat_t is
+        variable d : sbox_flat_t := (others => (others => '0'));
+    begin
+        for k in 0 to 3 loop
+            for b in 0 to 255 loop
+                d(256*k + to_integer(SBOX_ENC(256*k + b))) := to_unsigned(b, 8);
             end loop;
         end loop;
         return d;
     end function build_sbox_dec;
 
-    constant SBOX_DEC : kboxes_t := build_sbox_dec;
+    constant SBOX_DEC : sbox_flat_t := build_sbox_dec;
 
     -- m(row, col) = row0((col - row) mod 8)
     function circulant(r0 : mds_row_t) return mds_t is
@@ -263,24 +280,28 @@ package body kalyna_package is
 
     function sub_bytes(s : state_t) return state_t is
         variable r : state_t(s'range);
+        variable w : word64_t;
     begin
         for col in s'range loop
             for row in 0 to 7 loop
-                r(col)(8*row+7 downto 8*row) :=
-                    SBOX_ENC(row mod 4)(to_integer(get_byte(s, row, col)));
+                w(8*row+7 downto 8*row) :=
+                    SBOX_ENC(256*(row mod 4) + to_integer(get_byte(s, row, col)));
             end loop;
+            r(col) := w;                       -- запис цілим словом
         end loop;
         return r;
     end function sub_bytes;
 
     function inv_sub_bytes(s : state_t) return state_t is
         variable r : state_t(s'range);
+        variable w : word64_t;
     begin
         for col in s'range loop
             for row in 0 to 7 loop
-                r(col)(8*row+7 downto 8*row) :=
-                    SBOX_DEC(row mod 4)(to_integer(get_byte(s, row, col)));
+                w(8*row+7 downto 8*row) :=
+                    SBOX_DEC(256*(row mod 4) + to_integer(get_byte(s, row, col)));
             end loop;
+            r(col) := w;
         end loop;
         return r;
     end function inv_sub_bytes;
@@ -289,15 +310,21 @@ package body kalyna_package is
     function shift_rows(s : state_t) return state_t is
         constant nb : natural := s'length;
         variable r  : state_t(s'range);
-        variable sh : integer := -1;
+        variable w  : word64_t;
+        variable sh : integer;
     begin
-        for row in 0 to 7 loop
-            if row mod (8 / nb) = 0 then
-                sh := sh + 1;
-            end if;
-            for col in 0 to nb-1 loop
-                r((col + sh) mod nb)(8*row+7 downto 8*row) := get_byte(s, row, col);
+        -- Ітеруємо по стовпцю-ПРИЙМАЧУ: джерело для рядка row - це
+        -- стовпець (col - sh) mod nb. Так кожен запис іде цілим словом.
+        -- (VHDL "mod" дає невід'ємний результат для додатного nb.)
+        for col in 0 to nb-1 loop
+            sh := -1;
+            for row in 0 to 7 loop
+                if row mod (8 / nb) = 0 then
+                    sh := sh + 1;
+                end if;
+                w(8*row+7 downto 8*row) := get_byte(s, row, (col - sh) mod nb);
             end loop;
+            r(col) := w;
         end loop;
         return r;
     end function shift_rows;
@@ -305,21 +332,25 @@ package body kalyna_package is
     function inv_shift_rows(s : state_t) return state_t is
         constant nb : natural := s'length;
         variable r  : state_t(s'range);
-        variable sh : integer := -1;
+        variable w  : word64_t;
+        variable sh : integer;
     begin
-        for row in 0 to 7 loop
-            if row mod (8 / nb) = 0 then
-                sh := sh + 1;
-            end if;
-            for col in 0 to nb-1 loop
-                r(col)(8*row+7 downto 8*row) := get_byte(s, row, (col + sh) mod nb);
+        for col in 0 to nb-1 loop
+            sh := -1;
+            for row in 0 to 7 loop
+                if row mod (8 / nb) = 0 then
+                    sh := sh + 1;
+                end if;
+                w(8*row+7 downto 8*row) := get_byte(s, row, (col + sh) mod nb);
             end loop;
+            r(col) := w;
         end loop;
         return r;
     end function inv_shift_rows;
 
     function matrix_multiply(s : state_t; m : mds_t) return state_t is
         variable r : state_t(s'range);
+        variable w : word64_t;
         variable p : byte_t;
     begin
         for col in s'range loop
@@ -328,8 +359,9 @@ package body kalyna_package is
                 for b in 0 to 7 loop
                     p := p xor gf_mul(get_byte(s, b, col), m(row, b), POLY_KALYNA);
                 end loop;
-                r(col)(8*row+7 downto 8*row) := p;
+                w(8*row+7 downto 8*row) := p;
             end loop;
+            r(col) := w;
         end loop;
         return r;
     end function matrix_multiply;
@@ -407,11 +439,15 @@ package body kalyna_package is
         constant nbytes : natural := nb * 8;
         constant rot    : natural := 2*nb + 3;
         variable r      : state_t(s'range);
+        variable w      : word64_t;
         variable src    : natural;
     begin
-        for i in 0 to nbytes-1 loop
-            src := (i + rot) mod nbytes;
-            r(i/8)(8*(i mod 8)+7 downto 8*(i mod 8)) := get_byte(s, src mod 8, src/8);
+        for i in 0 to nb-1 loop                -- слово-приймач
+            for j in 0 to 7 loop               -- байт усередині слова
+                src := (8*i + j + rot) mod nbytes;
+                w(8*j+7 downto 8*j) := get_byte(s, src mod 8, src/8);
+            end loop;
+            r(i) := w;
         end loop;
         return r;
     end function rotate_left_bytes;

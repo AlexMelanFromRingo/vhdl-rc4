@@ -55,8 +55,18 @@ begin
 
     key_ready <= kr;
 
+    -- Спільний блок L(S(X(.))) ------------------------------------------
+    -- Пряме перетворення потрібне і в розгортанні ключа, і в шифруванні.
+    -- L = R^16, а кожне R - це 16 множень у GF(2^8), тобто одне L коштує
+    -- 256 множників. Тому операнди обираються мультиплексором, а сам
+    -- блок інстанціюється один раз (плюс один зворотний для дешифрування).
     process(clk, reset)
-        variable tmp : block_t;
+        variable tmp  : block_t;
+        variable la   : block_t;    -- операнди спільного прямого блока
+        variable lb   : block_t;
+        variable lsx  : block_t;    -- L(S(X(la, lb)))
+        variable linv : block_t;    -- S^-1(L^-1(blk))
+        variable ridx : natural range 1 to NR;
     begin
         if reset = '1' then
             state    <= IDLE;
@@ -69,6 +79,18 @@ begin
 
         elsif rising_edge(clk) then
             done <= '0';
+
+            -- Вибір операндів для єдиного прямого блока.
+            -- rnd = 0 лише поки блок не запущено; затискаємо індекс у межі.
+            if rnd = 0 then ridx := 1; else ridx := rnd; end if;
+            if state = KS_STEP then
+                la := ks_a;  lb := C_ITER(ks_i);
+            else
+                la := blk;   lb := rk(ridx);
+            end if;
+
+            lsx  := l_layer(s_layer(x_layer(la, lb)));      -- один екземпляр
+            linv := s_layer_inv(l_layer_inv(blk));          -- один екземпляр
 
             case state is
 
@@ -101,7 +123,7 @@ begin
 
                 -- Розгортання ключа: 32 кроки мережі Фейстеля
                 when KS_STEP =>
-                    tmp := x_layer(l_layer(s_layer(x_layer(ks_a, C_ITER(ks_i)))), ks_b);
+                    tmp := x_layer(lsx, ks_b);
                     ks_a <= tmp;
                     ks_b <= ks_a;
 
@@ -122,7 +144,7 @@ begin
                 -- Зашифрування: 9 раундів X-S-L, потім завершальне X[K10]
                 when ENC_ROUND =>
                     if rnd < NR then
-                        blk <= l_layer(s_layer(x_layer(blk, rk(rnd))));
+                        blk <= lsx;
                         rnd <= rnd + 1;
                     else
                         data_out <= to_word(x_layer(blk, rk(NR)));
@@ -131,7 +153,7 @@ begin
 
                 -- Розшифрування: 9 раундів X-(L^-1)-(S^-1)
                 when DEC_ROUND =>
-                    tmp := x_layer(s_layer_inv(l_layer_inv(blk)), rk(rnd));
+                    tmp := x_layer(linv, rk(rnd));
                     if rnd = 1 then
                         data_out <= to_word(tmp);
                         state    <= FINISH;

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1126" height="192" viewBox="0 0 1126 192">
+<style>
+svg{background:#fbfbfd;font-family:"DejaVu Sans",system-ui,sans-serif}
+.name{font-size:12px;fill:#28313d}
+.val{font-size:10px;fill:#5a6a7d}
+.col{font-size:12px;font-weight:600;fill:#28313d}
+.note{font-size:10px;fill:#8a94a2}
+</style>
+<rect width="1126" height="192" fill="#fbfbfd"/>
+<text x="10" y="59" class="name">rc4</text>
+<text x="10" y="89" class="name">gost28147</text>
+<text x="10" y="119" class="name">kuznyechik</text>
+<text x="150" y="26" class="col">Cells</text>
+<rect x="150" y="46" width="150" height="18" rx="3" fill="#8a8f98" opacity="0.85"/>
+<text x="307" y="59" class="val">46 131</text>
+<rect x="150" y="76" width="26" height="18" rx="3" fill="#c1666b" opacity="0.85"/>
+<text x="183" y="89" class="val">1 440</text>
+<rect x="150" y="106" width="144" height="18" rx="3" fill="#a4508b" opacity="0.85"/>
+<text x="301" y="119" class="val">43 024</text>
+<text x="394" y="26" class="col">Flip-flops</text>
+<rect x="394" y="46" width="150" height="18" rx="3" fill="#8a8f98" opacity="0.85"/>
+<text x="551" y="59" class="val">4 174</text>
+<rect x="394" y="76" width="46" height="18" rx="3" fill="#c1666b" opacity="0.85"/>
+<text x="447" y="89" class="val">395</text>
+<rect x="394" y="106" width="98" height="18" rx="3" fill="#a4508b" opacity="0.85"/>
+<text x="499" y="119" class="val">1 808</text>
+<text x="638" y="26" class="col">ECP5 LUT4</text>
+<rect x="638" y="46" width="150" height="18" rx="3" fill="#8a8f98" opacity="0.85"/>
+<text x="795" y="59" class="val">22 783</text>
+<rect x="638" y="76" width="33" height="18" rx="3" fill="#c1666b" opacity="0.85"/>
+<text x="678" y="89" class="val">1 114</text>
+<rect x="638" y="106" width="143" height="18" rx="3" fill="#a4508b" opacity="0.85"/>
+<text x="788" y="119" class="val">20 715</text>
+<text x="882" y="26" class="col">Transistors (CMOS est.)</text>
+<rect x="882" y="46" width="113" height="18" rx="3" fill="#8a8f98" opacity="0.85"/>
+<text x="1002" y="59" class="val">190 968</text>
+<rect x="882" y="76" width="19" height="18" rx="3" fill="#c1666b" opacity="0.85"/>
+<text x="908" y="89" class="val">5 524</text>
+<rect x="882" y="106" width="150" height="18" rx="3" fill="#a4508b" opacity="0.85"/>
+<text x="1039" y="119" class="val">331 916</text>
+<text x="10" y="176" class="note">Yosys 0.33 · bar length ∝ √value so small cores stay visible · ECP5 = Lattice LFE5U mapping · transistor count is Yosys&#39; CMOS estimate, not a real PDK</text>
+</svg>

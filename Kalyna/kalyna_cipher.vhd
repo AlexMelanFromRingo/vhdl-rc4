@@ -88,9 +88,16 @@ begin
 
     key_ready <= kr;
 
+    -- Спільний раундовий датапат ---------------------------------------
+    -- encipher_round викликається у шести станах автомата. Якщо лишити
+    -- виклики на місцях, синтезатор побудує ШІСТЬ окремих комбінаційних
+    -- раундів (для Nb=2 це ~9 тис. комірок кожен). Тому вхід раунду
+    -- обирається мультиплексором, а сам раунд інстанціюється рівно один
+    -- раз - разом із одним оберненим раундом для розшифрування.
     process(clk, reset)
-        variable v    : blk_t;
-        variable src  : blk_t;
+        variable rin  : blk_t;      -- вхід спільного прямого раунду
+        variable rout : blk_t;      -- encipher_round(rin)
+        variable dout : blk_t;      -- decipher_round(st)
     begin
         if reset = '1' then
             state    <= IDLE;
@@ -106,6 +113,19 @@ begin
         elsif rising_edge(clk) then
             done <= '0';
 
+            -- Вибір операнда для єдиного прямого раунду
+            case state is
+                when KE_KT_A => rin := add_mod(kt_seed, k0);
+                when KE_KT_B => rin := xor_st(st, k1);
+                when KE_KT_C => rin := add_mod(st, k0);
+                when KE_A    => rin := add_mod(st, kt_round);
+                when KE_B    => rin := xor_st(st, kt_round);
+                when others  => rin := st;            -- ENC_ROUND тощо
+            end case;
+
+            rout := encipher_round(rin);              -- один екземпляр
+            dout := decipher_round(st);               -- один екземпляр
+
             case state is
 
                 when IDLE =>
@@ -113,11 +133,8 @@ begin
                     if key_start = '1' then
                         ini <= to_state(key_in, NK);
                         k0  <= to_state(key_in, NK)(0 to NB-1);
-                        if NK = NB then
-                            k1 <= to_state(key_in, NK)(0 to NB-1);
-                        else
-                            k1 <= to_state(key_in, NK)(NB to 2*NB-1);
-                        end if;
+                        -- k1 - друга половина ключа (при Nk = Nb це та сама k0)
+                        k1 <= to_state(key_in, NK)(NK-NB to NK-1);
                         tmv   <= TMV_INIT;
                         rnd_e <= 0;
                         half  <= 0;
@@ -141,33 +158,38 @@ begin
 
                 -- ---------- допоміжний ключ Kt: три раунди ----------
                 when KE_KT_A =>
-                    st    <= encipher_round(add_mod(kt_seed, k0));
+                    st    <= rout;
                     state <= KE_KT_B;
 
                 when KE_KT_B =>
-                    st    <= encipher_round(xor_st(st, k1));
+                    st    <= rout;
                     state <= KE_KT_C;
 
                 when KE_KT_C =>
-                    kt    <= encipher_round(add_mod(st, k0));
+                    kt    <= rout;
                     state <= KE_PRE;
 
                 -- ---------- парні раундові ключі ----------
                 when KE_PRE =>
                     kt_round <= add_mod(kt, tmv);
+                    -- Друга половина ключа існує лише при Nk = 2*Nb. Індекс
+                    -- записано як NK-NB, а не NB: при Nk = Nb він дорівнює 0,
+                    -- тож зріз лишається в межах масиву. Інакше синтезатор
+                    -- будує обидві гілки й падає на виході за межі, хоча в
+                    -- симуляції half там ніколи не дорівнює 1.
                     if half = 0 then
                         st <= ini(0 to NB-1);
                     else
-                        st <= ini(NB to 2*NB-1);
+                        st <= ini(NK-NB to NK-1);
                     end if;
                     state <= KE_A;
 
                 when KE_A =>
-                    st    <= encipher_round(add_mod(st, kt_round));
+                    st    <= rout;
                     state <= KE_B;
 
                 when KE_B =>
-                    st    <= encipher_round(xor_st(st, kt_round));
+                    st    <= rout;
                     state <= KE_C;
 
                 when KE_C =>
@@ -204,20 +226,20 @@ begin
                 -- ---------- зашифрування ----------
                 when ENC_ROUND =>
                     if rnd < NR then
-                        st  <= xor_st(encipher_round(st), rk(rnd));
+                        st  <= xor_st(rout, rk(rnd));
                         rnd <= rnd + 1;
                     else
-                        data_out <= to_bus(add_mod(encipher_round(st), rk(NR)));
+                        data_out <= to_bus(add_mod(rout, rk(NR)));
                         state    <= FINISH;
                     end if;
 
                 -- ---------- розшифрування ----------
                 when DEC_ROUND =>
                     if rnd > 0 then
-                        st  <= xor_st(decipher_round(st), rk(rnd));
+                        st  <= xor_st(dout, rk(rnd));
                         rnd <= rnd - 1;
                     else
-                        data_out <= to_bus(sub_mod(decipher_round(st), rk(0)));
+                        data_out <= to_bus(sub_mod(dout, rk(0)));
                         state    <= FINISH;
                     end if;
 
