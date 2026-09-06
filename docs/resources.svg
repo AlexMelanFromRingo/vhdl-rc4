@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1126" height="192" viewBox="0 0 1126 192">
+<svg xmlns="http://www.w3.org/2000/svg" width="1126" height="402" viewBox="0 0 1126 402">
 <style>
 svg{background:#fbfbfd;font-family:"DejaVu Sans",system-ui,sans-serif}
 .name{font-size:12px;fill:#28313d}
@@ -6,37 +6,100 @@ svg{background:#fbfbfd;font-family:"DejaVu Sans",system-ui,sans-serif}
 .col{font-size:12px;font-weight:600;fill:#28313d}
 .note{font-size:10px;fill:#8a94a2}
 </style>
-<rect width="1126" height="192" fill="#fbfbfd"/>
+<rect width="1126" height="402" fill="#fbfbfd"/>
 <text x="10" y="59" class="name">rc4</text>
 <text x="10" y="89" class="name">gost28147</text>
 <text x="10" y="119" class="name">kuznyechik</text>
+<text x="10" y="149" class="name">kalyna_128_128</text>
+<text x="10" y="179" class="name">kalyna_128_256</text>
+<text x="10" y="209" class="name">kalyna_256_256</text>
+<text x="10" y="239" class="name">kalyna_256_512</text>
+<text x="10" y="269" class="name">kalyna_512_512</text>
+<text x="10" y="299" class="name">strumok_256</text>
+<text x="10" y="329" class="name">strumok_512</text>
 <text x="150" y="26" class="col">Cells</text>
-<rect x="150" y="46" width="150" height="18" rx="3" fill="#8a8f98" opacity="0.85"/>
-<text x="307" y="59" class="val">46 131</text>
-<rect x="150" y="76" width="26" height="18" rx="3" fill="#c1666b" opacity="0.85"/>
-<text x="183" y="89" class="val">1 440</text>
-<rect x="150" y="106" width="144" height="18" rx="3" fill="#a4508b" opacity="0.85"/>
-<text x="301" y="119" class="val">43 024</text>
+<rect x="150" y="46" width="78" height="18" rx="3" fill="#8a8f98" opacity="0.85"/>
+<text x="235" y="59" class="val">46 131</text>
+<rect x="150" y="76" width="13" height="18" rx="3" fill="#c1666b" opacity="0.85"/>
+<text x="170" y="89" class="val">1 440</text>
+<rect x="150" y="106" width="66" height="18" rx="3" fill="#a4508b" opacity="0.85"/>
+<text x="223" y="119" class="val">32 934</text>
+<rect x="150" y="136" width="70" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="227" y="149" class="val">36 963</text>
+<rect x="150" y="166" width="73" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="230" y="179" class="val">40 622</text>
+<rect x="150" y="196" width="102" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="259" y="209" class="val">79 583</text>
+<rect x="150" y="226" width="107" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="264" y="239" class="val">86 429</text>
+<rect x="150" y="256" width="150" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="307" y="269" class="val">169 246</text>
+<rect x="150" y="286" width="47" height="18" rx="3" fill="#2b6cb0" opacity="0.85"/>
+<text x="204" y="299" class="val">17 005</text>
+<rect x="150" y="316" width="47" height="18" rx="3" fill="#2b6cb0" opacity="0.85"/>
+<text x="204" y="329" class="val">17 260</text>
 <text x="394" y="26" class="col">Flip-flops</text>
-<rect x="394" y="46" width="150" height="18" rx="3" fill="#8a8f98" opacity="0.85"/>
-<text x="551" y="59" class="val">4 174</text>
-<rect x="394" y="76" width="46" height="18" rx="3" fill="#c1666b" opacity="0.85"/>
-<text x="447" y="89" class="val">395</text>
-<rect x="394" y="106" width="98" height="18" rx="3" fill="#a4508b" opacity="0.85"/>
-<text x="499" y="119" class="val">1 808</text>
+<rect x="394" y="46" width="85" height="18" rx="3" fill="#8a8f98" opacity="0.85"/>
+<text x="486" y="59" class="val">4 174</text>
+<rect x="394" y="76" width="26" height="18" rx="3" fill="#c1666b" opacity="0.85"/>
+<text x="427" y="89" class="val">395</text>
+<rect x="394" y="106" width="56" height="18" rx="3" fill="#a4508b" opacity="0.85"/>
+<text x="457" y="119" class="val">1 808</text>
+<rect x="394" y="136" width="62" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="463" y="149" class="val">2 259</text>
+<rect x="394" y="166" width="72" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="473" y="179" class="val">3 028</text>
+<rect x="394" y="196" width="97" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="498" y="209" class="val">5 459</text>
+<rect x="394" y="226" width="110" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="511" y="239" class="val">6 999</text>
+<rect x="394" y="256" width="150" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="551" y="269" class="val">12 886</text>
+<rect x="394" y="286" width="47" height="18" rx="3" fill="#2b6cb0" opacity="0.85"/>
+<text x="448" y="299" class="val">1 295</text>
+<rect x="394" y="316" width="47" height="18" rx="3" fill="#2b6cb0" opacity="0.85"/>
+<text x="448" y="329" class="val">1 295</text>
 <text x="638" y="26" class="col">ECP5 LUT4</text>
-<rect x="638" y="46" width="150" height="18" rx="3" fill="#8a8f98" opacity="0.85"/>
-<text x="795" y="59" class="val">22 783</text>
-<rect x="638" y="76" width="33" height="18" rx="3" fill="#c1666b" opacity="0.85"/>
-<text x="678" y="89" class="val">1 114</text>
-<rect x="638" y="106" width="143" height="18" rx="3" fill="#a4508b" opacity="0.85"/>
-<text x="788" y="119" class="val">20 715</text>
+<rect x="638" y="46" width="72" height="18" rx="3" fill="#8a8f98" opacity="0.85"/>
+<text x="717" y="59" class="val">22 783</text>
+<rect x="638" y="76" width="16" height="18" rx="3" fill="#c1666b" opacity="0.85"/>
+<text x="661" y="89" class="val">1 114</text>
+<rect x="638" y="106" width="59" height="18" rx="3" fill="#a4508b" opacity="0.85"/>
+<text x="704" y="119" class="val">15 386</text>
+<rect x="638" y="136" width="72" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="717" y="149" class="val">22 635</text>
+<rect x="638" y="166" width="73" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="718" y="179" class="val">23 528</text>
+<rect x="638" y="196" width="103" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="748" y="209" class="val">46 583</text>
+<rect x="638" y="226" width="106" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="751" y="239" class="val">49 425</text>
+<rect x="638" y="256" width="150" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="795" y="269" class="val">97 707</text>
+<rect x="638" y="286" width="49" height="18" rx="3" fill="#2b6cb0" opacity="0.85"/>
+<text x="694" y="299" class="val">10 527</text>
+<rect x="638" y="316" width="50" height="18" rx="3" fill="#2b6cb0" opacity="0.85"/>
+<text x="695" y="329" class="val">11 021</text>
 <text x="882" y="26" class="col">Transistors (CMOS est.)</text>
-<rect x="882" y="46" width="113" height="18" rx="3" fill="#8a8f98" opacity="0.85"/>
-<text x="1002" y="59" class="val">190 968</text>
-<rect x="882" y="76" width="19" height="18" rx="3" fill="#c1666b" opacity="0.85"/>
-<text x="908" y="89" class="val">5 524</text>
-<rect x="882" y="106" width="150" height="18" rx="3" fill="#a4508b" opacity="0.85"/>
-<text x="1039" y="119" class="val">331 916</text>
-<text x="10" y="176" class="note">Yosys 0.33 · bar length ∝ √value so small cores stay visible · ECP5 = Lattice LFE5U mapping · transistor count is Yosys&#39; CMOS estimate, not a real PDK</text>
+<rect x="882" y="46" width="66" height="18" rx="3" fill="#8a8f98" opacity="0.85"/>
+<text x="955" y="59" class="val">190 968</text>
+<rect x="882" y="76" width="11" height="18" rx="3" fill="#c1666b" opacity="0.85"/>
+<text x="900" y="89" class="val">5 524</text>
+<rect x="882" y="106" width="73" height="18" rx="3" fill="#a4508b" opacity="0.85"/>
+<text x="962" y="119" class="val">234 036</text>
+<rect x="882" y="136" width="72" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="961" y="149" class="val">228 120</text>
+<rect x="882" y="166" width="73" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="962" y="179" class="val">237 782</text>
+<rect x="882" y="196" width="103" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="992" y="209" class="val">469 058</text>
+<rect x="882" y="226" width="106" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="995" y="239" class="val">495 608</text>
+<rect x="882" y="256" width="150" height="18" rx="3" fill="#2f7d43" opacity="0.85"/>
+<text x="1039" y="269" class="val">982 342</text>
+<rect x="882" y="286" width="44" height="18" rx="3" fill="#2b6cb0" opacity="0.85"/>
+<text x="933" y="299" class="val">85 238</text>
+<rect x="882" y="316" width="44" height="18" rx="3" fill="#2b6cb0" opacity="0.85"/>
+<text x="933" y="329" class="val">87 088</text>
+<text x="10" y="386" class="note">Yosys 0.33 · bar length ∝ √value so small cores stay visible · ECP5 = Lattice LFE5U mapping · transistor count is Yosys&#39; CMOS estimate, not a real PDK</text>
 </svg>

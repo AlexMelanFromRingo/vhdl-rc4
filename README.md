@@ -137,7 +137,18 @@ mapping whose transistor estimate stands in for "what this would cost in
 silicon".
 
 <!--SYNTH:BEGIN-->
-_(run `./synth/run_synth.sh` to populate)_
+| Design | Cells | Flip-flops | ECP5 LUT4 | Gates (CMOS) | Transistors | kGE |
+|---|---|---|---|---|---|---|
+| RC4 | 46 131 | 4 174 | 22 783 | 35 028 | 190 968 | 47.7 |
+| GOST 28147-89 | 1 440 | 395 | 1 114 | 1 040 | 5 524 | 1.4 |
+| Kuznyechik | 32 934 | 1 808 | 15 386 | 28 415 | 234 036 | 58.5 |
+| Kalyna-128/128 | 36 963 | 2 259 | 22 635 | 29 694 | 228 120 | 57.0 |
+| Kalyna-128/256 | 40 622 | 3 028 | 23 528 | 32 292 | 237 782 | 59.4 |
+| Kalyna-256/256 | 79 583 | 5 459 | 46 583 | 63 229 | 469 058 | 117.3 |
+| Kalyna-256/512 | 86 429 | 6 999 | 49 425 | 67 726 | 495 608 | 123.9 |
+| Kalyna-512/512 | 169 246 | 12 886 | 97 707 | 133 753 | 982 342 | 245.6 |
+| Strumok-256 | 17 005 | 1 295 | 10 527 | 12 363 | 85 238 | 21.3 |
+| Strumok-512 | 17 260 | 1 295 | 11 021 | 12 711 | 87 088 | 21.8 |
 <!--SYNTH:END-->
 
 ![resource comparison](docs/resources.svg)
@@ -149,15 +160,41 @@ relative costs between the five ciphers, which is what they are good for.
 
 Things the numbers actually say:
 
-- **RC4 is the expensive one.** Its 256-byte S-box and 256-byte key array are
-  *registers* that get permuted in place, so they synthesise to thousands of
-  flip-flops. GOST 28147-89, whose S-boxes are constant ROMs, is roughly thirty
-  times smaller — algorithmic simplicity and hardware cost are not the same axis.
-- **Kuznyechik is dominated by its L transform.** `L = R¹⁶`, and each `R` is
-  sixteen GF(2⁸) multiplies, so one `L` is 256 multipliers — which is why the
-  forward path is shared between the key schedule and the encryption rounds.
-- **Kalyna scales close to linearly** with block size, because Nb only widens the
-  state; the round structure is unchanged.
+- **Kuznyechik and Kalyna-128/128 land on top of each other.** 58.5 kGE against
+  57.0 kGE, and both take 13 clocks per 128-bit block. Two standards of the same
+  generation and the same class cost the same in hardware — which is exactly the
+  comparison this repository exists to make, and it is a draw.
+- **Strumok is the efficiency winner by an order of magnitude.** 21.3 kGE at one
+  64-bit word per clock. Per unit of area it moves ~18× the data of either block
+  cipher, because a stream cipher amortises its state over every cycle instead
+  of re-running a round function.
+- **GOST 28147-89 is startlingly cheap: 1.4 kGE**, forty times smaller than
+  Kalyna-128/128. A Feistel network reuses one 32-bit datapath, the S-boxes are
+  constant ROMs, and there is no key schedule at all. The bill comes as 32
+  rounds for a 64-bit block.
+- **RC4 is the worst on every axis** — 47.7 kGE for 1.6 bits/cycle, thirty-four
+  times the area of GOST for less throughput. Its 256-byte S-box is permuted in
+  place, so it is 4 174 *registers* rather than ROM. Algorithmic simplicity and
+  hardware cost are not the same axis.
+- **Kalyna scales ~2.05× per doubling of block size** (57.0 → 117.3 → 245.6 kGE):
+  Nb only widens the state, the round structure is unchanged.
+- **Strumok-256 and Strumok-512 are the same size** (21.3 vs 21.8 kGE, an
+  identical 1 295 flip-flops). The LFSR is 16 × 64 bits whichever key you use;
+  only the initial loading differs.
+
+| Core | Area (kGE) | Throughput (bits/cycle) | bits/cycle/kGE |
+|---|---|---|---|
+| Strumok-256 | 21.3 | 64.0 | **3.00** |
+| GOST 28147-89 | 1.4 | 1.8 | 1.30 |
+| Kalyna-128/128 | 57.0 | 9.8 | 0.17 |
+| Kuznyechik | 58.5 | 9.8 | 0.17 |
+| Kalyna-512/512 | 245.6 | 24.4 | 0.10 |
+| RC4 | 47.7 | 1.6 | 0.03 |
+
+**Sharing the round datapath paid for itself.** Kuznyechik dropped from 43 024
+to 32 934 cells (−23 %) and 331 916 to 234 036 transistors (−30 %) once `L` was
+instantiated once instead of per-state; the flip-flop count is unchanged, as it
+should be, since only combinational logic moved.
 
 ---
 
