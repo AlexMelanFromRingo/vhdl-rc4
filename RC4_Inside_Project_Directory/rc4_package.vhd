@@ -1,5 +1,5 @@
 -- RC4 Package: Типи та константи
--- Автор: CleverBot
+-- Автор: Alex Melan
 -- Проект: Реалізація RC4 шифру
 
 library IEEE;

@@ -1,5 +1,5 @@
 -- RC4 Testbench: Тестування шифру
--- Автор: CleverBot
+-- Автор: Alex Melan
 -- Тестовий вектор 1: Key="Key", Plaintext="Plaintext"
 
 library IEEE;
